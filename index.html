@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>macOS Pong Game</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #2c3e50, #3498db);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 90vw;
+      max-height: 90vh;
+      position: relative;
+    }
+
+    .match-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      padding: 20px;
+      z-index: 5;
+    }
+
+    canvas {
+      border-radius: 10px;
+      background: #1a1a1a;
+    }
+
+    .score-board {
+      color: #fff;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .exit-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 0, 0, 0.7);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s ease;
+    }
+
+    .exit-button:hover {
+      background: rgba(255, 0, 0, 0.9);
+    }
+
+    .achievements-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 122, 255, 0.7);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s ease;
+    }
+
+    .achievements-button:hover {
+      background: rgba(0, 122, 255, 0.9);
+    }
+
+    .bot-selection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #fff;
+      width: 100%;
+      height: 100%;
+    }
+
+    .bot-selection h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .bot-carousel {
+      display: flex;
+      overflow: hidden;
+      width: 660px;
+      max-width: 90%;
+      position: relative;
+      justify-content: center;
+      padding: 20px 40px;
+    }
+
+    .bot-card {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      margin: 0 10px;
+      flex: 0 0 200px;
+      transition: transform 0.5s ease, opacity 0.5s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .bot-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .bot-card img {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    .bot-card p {
+      margin: 0;
+      font-size: 1.3rem;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #fff;
+      transition: background 0.2s ease;
+    }
+
+    .arrow:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .arrow.left {
+      left: 10px;
+    }
+
+    .arrow.right {
+      right: 10px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      color: #333;
+      max-width: 80%;
+      z-index: 10;
+    }
+
+    .countdown-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      border-radius: 15px;
+      padding: 40px;
+      text-align: center;
+      color: #fff;
+      font-size: 3rem;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      z-index: 20;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    .normal-ai-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #000000;
+      padding: 40px;
+      text-align: center;
+      color: #ff0000;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      z-index: 25;
+      max-width: 80%;
+      opacity: 0;
+    }
+
+    .achievements-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-radius: 15px 0 0 15px;
+      padding: 20px;
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+      color: #333;
+      z-index: 15;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .achievements-modal.open {
+      transform: translateX(0);
+    }
+
+    .achievements-modal h2 {
+      font-size: 1.8rem;
+      margin: 0 0 20px;
+    }
+
+    .achievements-modal ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .achievements-modal li {
+      margin: 10px 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .achievements-modal li.completed::before {
+      content: '✅';
+      margin-right: 10px;
+    }
+
+    .achievements-modal li:not(.completed)::before {
+      content: '⬜';
+      margin-right: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    .modal h2 {
+      margin: 0 0 10px;
+      font-size: 1.8rem;
+    }
+
+    .modal p {
+      margin: 0 0 20px;
+      font-size: 1.2rem;
+    }
+
+    .modal button {
+      background: #007aff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin: 0 10px;
+    }
+
+    .modal button:hover {
+      background: #005ecb;
+    }
+
+    @media (max-width: 600px) {
+      .container, .match-screen {
+        padding: 10px;
+      }
+
+      .score-board {
+        font-size: 1.2rem;
+      }
+
+      .bot-card {
+        flex: 0 0 120px;
+      }
+
+      .bot-card img {
+        width: 80px;
+        height: 80px;
+      }
+
+      .bot-carousel {
+        width: 100%;
+        padding: 20px;
+      }
+
+      .countdown-modal {
+        padding: 20px;
+        font-size: 2rem;
+      }
+
+      .normal-ai-modal {
+        font-size: 1.5rem;
+        padding: 20px;
+      }
+
+      .achievements-modal {
+        width: 80%;
+      }
+
+      .arrow {
+        padding: 8px;
+        font-size: 1.2rem;
+      }
+
+      .exit-button {
+        top: 10px;
+        left: 10px;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="mainContainer">
+    <button class="achievements-button" id="achievementsButton" onclick="toggleAchievements()">Achievements</button>
+    <div class="bot-selection" id="botSelection">
+      <h2>Select Your Opponent</h2>
+      <div class="bot-carousel" id="botCarousel">
+        <button class="arrow left" id="carouselLeft">←</button>
+        <div class="bot-card" data-bot="1">
+          <img src="https://imgur.com/0mUKe7Y.png" alt="Your Grandpa">
+          <p>Your Grandpa</p>
+        </div>
+        <div class="bot-card" data-bot="2">
+          <img src="https://imgur.com/vaAusAL.png" alt="Normal AI">
+          <p>Normal AI</p>
+        </div>
+        <div class="bot-card" data-bot="3">
+          <img src="https://imgur.com/q7E4DpM.png" alt="Rich CEO">
+          <p>Rich CEO</p>
+        </div>
+        <button class="arrow right" id="carouselRight">→</button>
+      </div>
+    </div>
+  </div>
+  <div class="match-screen" id="matchScreen">
+    <button class="exit-button" id="exitButton" onclick="returnToBotSelection()">Exit</button>
+    <div class="score-board" id="scoreBoard">
+      Player: <span id="playerScore">0</span> | Bot: <span id="botScore">0</span>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+  </div>
+  <div class="countdown-modal" id="countdownModal"></div>
+  <div class="modal" id="gameOverModal">
+    <h2>Game Over</h2>
+    <p>Player: <span id="finalPlayerScore">0</span> | Bot: <span id="finalBotScore">0</span></p>
+    <button onclick="returnToBotSelection()">Back to Selection</button>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+  <div class="achievements-modal" id="achievementsModal">
+    <h2>Achievements</h2>
+    <ul id="achievementsList"></ul>
+    <button onclick="toggleAchievements()">Close</button>
+  </div>
+  <div class="normal-ai-modal" id="normalAIModal">I'm Sorry Dave, But I'm Afraid I Can't Do That.</div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const mainContainer = document.getElementById('mainContainer');
+    const matchScreen = document.getElementById('matchScreen');
+    const botSelection = document.getElementById('botSelection');
+    const botCarousel = document.getElementById('botCarousel');
+    const scoreBoard = document.getElementById('scoreBoard');
+    const exitButton = document.getElementById('exitButton');
+    const achievementsButton = document.getElementById('achievementsButton');
+    const playerScoreDisplay = document.getElementById('playerScore');
+    const botScoreDisplay = document.getElementById('botScore');
+    const countdownModal = document.getElementById('countdownModal');
+    const gameOverModal = document.getElementById('gameOverModal');
+    const achievementsModal = document.getElementById('achievementsModal');
+    const achievementsList = document.getElementById('achievementsList');
+    const carouselLeft = document.getElementById('carouselLeft');
+    const carouselRight = document.getElementById('carouselRight');
+    const normalAIModal = document.getElementById('normalAIModal');
+    const finalPlayerScoreDisplay = document.getElementById('finalPlayerScore');
+    const finalBotScoreDisplay = document.getElementById('finalBotScore');
+
+    // Responsive canvas sizing
+    const paddleWidth = 12;
+    const paddleHeight = 100;
+    let canvasWidth, canvasHeight;
+
+    function resizeCanvas() {
+      canvasWidth = Math.min(window.innerWidth * 0.8, 800);
+      canvasHeight = Math.min(window.innerHeight * 0.7, 600);
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Game state
+    let playerPaddle = { x: 20, y: canvasHeight / 2 - paddleHeight / 2, targetY: canvasHeight / 2 - paddleHeight / 2 };
+    let botPaddle = { x: canvasWidth - 32, y: canvasHeight / 2 - paddleHeight / 2 };
+    let ball = { x: canvasWidth / 2, y: canvasHeight / 2, dx: 6, dy: 6, radius: 10 };
+    let particles = [];
+    let playerScore = 0;
+    let botScore = 0;
+    let selectedBot = null;
+    let isGameRunning = false;
+    let rallyCount = 0;
+    let matchStartTime = 0;
+    let ballSpeed = 6;
+    let grandpaDelay = 0;
+    let lastGrandpaUpdate = 0;
+
+    // Bot configurations
+    const bots = [
+      { name: 'Your Grandpa', speed: 1, accuracy: 0.2 },  // Extremely bad
+      { name: 'Normal AI', speed: 14, accuracy: 0.995 }, // Very hard
+      { name: 'Rich CEO', speed: 8, accuracy: 0.85 }     // Hard
+    ];
+
+    // Achievements
+    const achievements = [
+      { id: 'first_point', name: 'First Point', description: 'Score your first point against any bot.', completed: false },
+      { id: 'rally_master', name: 'Rally Master', description: 'Achieve a rally of 10 paddle hits in a single point.', completed: false },
+      { id: 'underdog', name: 'Underdog', description: 'Win a match against Your Grandpa.', completed: false },
+      { id: 'ceo_slayer', name: 'CEO Slayer', description: 'Win a match against Rich CEO.', completed: false },
+      { id: 'against_all_odds', name: 'Against All Odds', description: 'Score a point against Normal AI.', completed: false },
+      { id: 'marathon', name: 'Marathon', description: 'Play a match lasting over 2 minutes.', completed: false },
+      { id: 'speed_demon', name: 'Speed Demon', description: 'Reach a ball speed of 15 or higher.', completed: false },
+      { id: 'shutout', name: 'Shutout', description: 'Win a match without the bot scoring.', completed: false },
+      { id: 'comeback_king', name: 'Comeback King', description: 'Score a point after the bot has 5 points.', completed: false },
+      { id: 'paddle_pro', name: 'Paddle Pro', description: 'Complete all other achievements.', completed: false }
+    ];
+
+    // Load achievements from localStorage
+    function loadAchievements() {
+      const saved = localStorage.getItem('pong_achievements');
+      if (saved) {
+        const savedAchievements = JSON.parse(saved);
+        achievements.forEach(ach => {
+          const savedAch = savedAchievements.find(s => s.id === ach.id);
+          if (savedAch) ach.completed = savedAch.completed;
+        });
+      }
+      updateAchievementsUI();
+    }
+
+    // Save achievements to localStorage
+    function saveAchievements() {
+      localStorage.setItem('pong_achievements', JSON.stringify(achievements));
+      updateAchievementsUI();
+    }
+
+    // Update achievements UI
+    function updateAchievementsUI() {
+      achievementsList.innerHTML = achievements.map(ach => `
+        <li class="${ach.completed ? 'completed' : ''}">${ach.name}: ${ach.description}</li>
+      `).join('');
+    }
+
+    // Check achievement conditions
+    function checkAchievements() {
+      if (playerScore > 0 && !achievements[0].completed) {
+        achievements[0].completed = true;
+      }
+      if (rallyCount >= 10 && !achievements[1].completed) {
+        achievements[1].completed = true;
+      }
+      if (playerScore >= 5 && botScore === 0 && selectedBot === 1 && !achievements[2].completed) {
+        achievements[2].completed = true;
+      }
+      if (playerScore >= 5 && botScore === 0 && selectedBot === 3 && !achievements[3].completed) {
+        achievements[3].completed = true;
+      }
+      if (playerScore > 0 && selectedBot === 2 && !achievements[4].completed) {
+        achievements[4].completed = true;
+      }
+      if (Date.now() - matchStartTime > 120000 && !achievements[5].completed) {
+        achievements[5].completed = true;
+      }
+      if (ballSpeed >= 15 && !achievements[6].completed) {
+        achievements[6].completed = true;
+      }
+      if (playerScore >= 5 && botScore === 0 && !achievements[7].completed) {
+        achievements[7].completed = true;
+      }
+      if (botScore >= 5 && playerScore > 0 && !achievements[8].completed) {
+        achievements[8].completed = true;
+      }
+      if (achievements.slice(0, 9).every(ach => ach.completed) && !achievements[9].completed) {
+        achievements[9].completed = true;
+      }
+      saveAchievements();
+    }
+
+    // Toggle achievements menu
+    function toggleAchievements() {
+      achievementsModal.classList.toggle('open');
+      achievementsButton.style.display = achievementsModal.classList.contains('open') ? 'none' : 'block';
+    }
+
+    // Carousel scrolling
+    let currentCardIndex = 1; // Start with middle card (Normal AI)
+    let carouselPos = -currentCardIndex * 220;
+    let targetCarouselPos = carouselPos;
+    const cardWidth = 220; // Card width + margin
+    let isScrolling = false;
+
+    function updateCarousel() {
+      carouselPos += (targetCarouselPos - carouselPos) * 0.2; // Smooth easing
+      botCarousel.style.transform = `translateX(${carouselPos}px)`;
+      const cards = document.querySelectorAll('.bot-card');
+      for (let i = 0; i < cards.length; i++) {
+        const offset = Math.abs(carouselPos + i * cardWidth + cardWidth / 2);
+        const scale = Math.max(0.8, 1.2 - offset / 500); // Larger active card
+        cards[i].style.transform = `scale(${scale})`;
+        cards[i].style.opacity = Math.max(0.6, scale);
+      }
+      carouselLeft.style.display = currentCardIndex > 0 ? 'block' : 'none';
+      carouselRight.style.display = currentCardIndex < bots.length - 1 ? 'block' : 'none';
+      requestAnimationFrame(updateCarousel);
+    }
+
+    // Initialize carousel after DOM load
+    setTimeout(() => {
+      carouselPos = -currentCardIndex * cardWidth;
+      targetCarouselPos = carouselPos;
+      botCarousel.style.transform = `translateX(${carouselPos}px)`;
+      requestAnimationFrame(updateCarousel);
+    }, 100);
+
+    // Handle carousel navigation
+    function scrollCarousel(direction) {
+      if (isScrolling) return;
+      if (direction === 'left' && currentCardIndex > 0) {
+        isScrolling = true;
+        currentCardIndex--;
+        targetCarouselPos = -currentCardIndex * cardWidth;
+        setTimeout(() => isScrolling = false, 500);
+      } else if (direction === 'right' && currentCardIndex < bots.length - 1) {
+        isScrolling = true;
+        currentCardIndex++;
+        targetCarouselPos = -currentCardIndex * cardWidth;
+        setTimeout(() => isScrolling = false, 500);
+      }
+    }
+
+    carouselLeft.addEventListener('click', () => scrollCarousel('left'));
+    carouselRight.addEventListener('click', () => scrollCarousel('right'));
+
+    // Handle key input for carousel
+    document.addEventListener('keydown', e => {
+      if (botSelection.style.display === 'none' || isScrolling) return;
+      if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+        scrollCarousel('left');
+      } else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+        scrollCarousel('right');
+      }
+    });
+
+    // Handle bot selection
+    document.querySelectorAll('.bot-card').forEach(card => {
+      card.addEventListener('click', () => {
+        if (isScrolling) return;
+        selectedBot = parseInt(card.dataset.bot);
+        if (selectedBot === 2) {
+          showNormalAIModal();
+        } else {
+          startCountdown();
+        }
+      });
+    });
+
+    // Normal AI pre-match modal
+    function showNormalAIModal() {
+      botSelection.style.display = 'none';
+      normalAIModal.style.display = 'block';
+      normalAIModal.style.animation = 'fadeIn 1s forwards';
+      setTimeout(() => {
+        normalAIModal.style.animation = 'fadeOut 1s forwards';
+        setTimeout(() => {
+          normalAIModal.style.display = 'none';
+          normalAIModal.style.animation = 'none';
+          startCountdown();
+        }, 1000);
+      }, 3000);
+    }
+
+    // Countdown timer
+    function startCountdown() {
+      countdownModal.style.display = 'block';
+      let count = 3;
+      countdownModal.textContent = count;
+      const countdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownModal.textContent = count;
+        } else if (count === 0) {
+          countdownModal.textContent = 'Go!';
+        } else {
+          clearInterval(countdownInterval);
+          countdownModal.style.display = 'none';
+          startGame();
+        }
+      }, 1000);
+    }
+
+    // Mouse control
+    let mouseY = canvasHeight / 2;
+    canvas.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      mouseY = e.clientY - rect.top - paddleHeight / 2;
+    });
+
+    // Particle effect
+    function createParticles(x, y) {
+      for (let i = 0; i < 10; i++) {
+        particles.push({
+          x,
+          y,
+          dx: (Math.random() - 0.5) * 4,
+          dy: (Math.random() - 0.5) * 4,
+          life: 1,
+          radius: Math.random() * 5 + 2
+        });
+      }
+    }
+
+    // Dramatic effect for Normal AI
+    let flashOpacity = 0;
+    function drawFlash() {
+      if (flashOpacity > 0) {
+        ctx.fillStyle = `rgba(255, 0, 0, ${flashOpacity})`;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        flashOpacity -= 0.05;
+      }
+    }
+
+    // Draw game elements
+    function draw() {
+      // Background
+      ctx.fillStyle = selectedBot === 2 ? '#000000' : 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw grid background
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      for (let x = 0; x < canvasWidth; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvasHeight);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvasHeight; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvasWidth, y);
+        ctx.stroke();
+      }
+
+      // Draw center line
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.beginPath();
+      ctx.moveTo(canvasWidth / 2, 0);
+      ctx.lineTo(canvasWidth / 2, canvasHeight);
+      ctx.stroke();
+
+      // Draw paddles
+      const paddleGradient = ctx.createLinearGradient(0, playerPaddle.y, 0, playerPaddle.y + paddleHeight);
+      if (selectedBot === 2) {
+        paddleGradient.addColorStop(0, '#00ff00');
+        paddleGradient.addColorStop(1, '#006400');
+      } else {
+        paddleGradient.addColorStop(0, '#007aff');
+        paddleGradient.addColorStop(1, '#005ecb');
+      }
+      ctx.fillStyle = paddleGradient;
+      ctx.fillRect(playerPaddle.x, playerPaddle.y, paddleWidth, paddleHeight);
+      ctx.fillRect(botPaddle.x, botPaddle.y, paddleWidth, paddleHeight);
+
+      // Draw ball
+      const ballGradient = ctx.createRadialGradient(ball.x, ball.y, 0, ball.x, ball.y, ball.radius);
+      if (selectedBot === 2) {
+        ballGradient.addColorStop(0, '#ffffff');
+        ballGradient.addColorStop(1, '#00ff00');
+        ctx.shadowColor = '#00ff00';
+      } else {
+        ballGradient.addColorStop(0, '#ffffff');
+        ballGradient.addColorStop(1, '#007aff');
+        ctx.shadowColor = '#007aff';
+      }
+      ctx.fillStyle = ballGradient;
+      ctx.shadowBlur = 20;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Draw particles
+      particles = particles.filter(p => p.life > 0);
+      particles.forEach(p => {
+        ctx.fillStyle = selectedBot === 2 ? `rgba(0, 255, 0, ${p.life})` : `rgba(0, 122, 255, ${p.life})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.dx;
+        p.y += p.dy;
+        p.life -= 0.05;
+      });
+
+      // Draw flash for Normal AI
+      drawFlash();
+    }
+
+    // Update game state
+    function update() {
+      if (!isGameRunning) return;
+
+      // Move player paddle
+      playerPaddle.targetY = Math.max(0, Math.min(canvasHeight - paddleHeight, mouseY));
+      playerPaddle.y += (playerPaddle.targetY - playerPaddle.y) * 0.4;
+
+      // Move bot paddle
+      const bot = bots[selectedBot - 1];
+      const targetY = ball.y - paddleHeight / 2;
+      const error = (1 - bot.accuracy) * (Math.random() - 0.5) * 100;
+      if (selectedBot === 1) {
+        // Add random delay for Your Grandpa
+        const now = Date.now();
+        if (now - lastGrandpaUpdate > grandpaDelay) {
+          botPaddle.y += (targetY + error - botPaddle.y) * bot.speed * 0.1;
+          lastGrandpaUpdate = now;
+          grandpaDelay = Math.random() * 500; // Random delay up to 500ms
+        }
+      } else {
+        botPaddle.y += (targetY + error - botPaddle.y) * bot.speed * 0.1;
+      }
+      botPaddle.y = Math.max(0, Math.min(canvasHeight - paddleHeight, botPaddle.y));
+
+      // Move ball
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      // Ball collisions with top/bottom
+      if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvasHeight) {
+        ball.dy = -ball.dy * 0.98; // Slight friction
+        createParticles(ball.x, ball.y);
+      }
+
+      // Ball collisions with paddles
+      let hitPaddle = false;
+      if (
+        (ball.x - ball.radius < playerPaddle.x + paddleWidth &&
+          ball.y > playerPaddle.y &&
+          ball.y < playerPaddle.y + paddleHeight)
+      ) {
+        const hitPos = (ball.y - playerPaddle.y - paddleHeight / 2) / (paddleHeight / 2);
+        ball.dx = -ball.dx * 1.1;
+        ball.dy = hitPos * 7 + (Math.random() - 0.5) * 2;
+        hitPaddle = true;
+        rallyCount++;
+        ballSpeed *= 1.1;
+      } else if (
+        (ball.x + ball.radius > botPaddle.x &&
+          ball.y > botPaddle.y &&
+          ball.y < botPaddle.y + paddleHeight)
+      ) {
+        const hitPos = (ball.y - botPaddle.y - paddleHeight / 2) / (paddleHeight / 2);
+        ball.dx = -ball.dx * 1.1;
+        ball.dy = hitPos * 7 + (Math.random() - 0.5) * 2;
+        hitPaddle = true;
+        rallyCount++;
+        ballSpeed *= 1.1;
+      }
+
+      if (hitPaddle) {
+        createParticles(ball.x, ball.y);
+        checkAchievements();
+      }
+
+      // Score points
+      if (ball.x < 0) {
+        botScore++;
+        rallyCount = 0;
+        resetBall();
+        checkAchievements();
+      } else if (ball.x > canvasWidth) {
+        playerScore++;
+        rallyCount = 0;
+        resetBall();
+        checkAchievements();
+      }
+
+      // Update UI
+      playerScoreDisplay.textContent = playerScore;
+      botScoreDisplay.textContent = botScore;
+
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    // Reset ball
+    function resetBall() {
+      ball.x = canvasWidth / 2;
+      ball.y = canvasHeight / 2;
+      ball.dx = (Math.random() > 0.5 ? 6 : -6) * (selectedBot === 2 ? 2 : 1);
+      ball.dy = (Math.random() - 0.5) * 8;
+      ballSpeed = 6;
+    }
+
+    // Game over
+    function gameOver() {
+      isGameRunning = false;
+      finalPlayerScoreDisplay.textContent = playerScore;
+      finalBotScoreDisplay.textContent = botScore;
+      gameOverModal.style.display = 'block';
+      exitButton.style.display = 'none';
+    }
+
+    // Start game
+    function startGame() {
+      if (selectedBot === 2) {
+        flashOpacity = 0.5;
+        const audio = new Audio('https://www.soundjay.com/buttons/beep-03.mp3');
+        audio.play();
+        canvas.style.background = '#000000';
+      } else {
+        canvas.style.background = '#1a1a1a';
+      }
+      mainContainer.style.display = 'none';
+      matchScreen.style.display = 'flex';
+      scoreBoard.style.display = 'block';
+      canvas.style.display = 'block';
+      exitButton.style.display = 'block';
+      isGameRunning = true;
+      playerScore = 0;
+      botScore = 0;
+      rallyCount = 0;
+      ballSpeed = 6;
+      matchStartTime = Date.now();
+      resetBall();
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    // Restart game
+    function restartGame() {
+      gameOverModal.style.display = 'none';
+      startGame();
+    }
+
+    // Return to bot selection
+    function returnToBotSelection() {
+      gameOverModal.style.display = 'none';
+      matchScreen.style.display = 'none';
+      mainContainer.style.display = 'flex';
+      botSelection.style.display = 'flex';
+      scoreBoard.style.display = 'none';
+      canvas.style.display = 'none';
+      exitButton.style.display = 'none';
+      achievementsButton.style.display = 'block';
+      isGameRunning = false;
+      currentCardIndex = 1;
+      targetCarouselPos = -currentCardIndex * cardWidth;
+      carouselPos = targetCarouselPos;
+      canvas.style.background = '#1a1a1a';
+    }
+
+    // Initialize
+    loadAchievements();
+    draw();
+  </script>
+</body>
+</html>
