@@ -19,6 +19,20 @@
       --ballGlow: 0 0 12px rgba(0, 122, 255, 0.7);
     }
 
+    :root.developer-mode {
+      --systemBackground: #000000;
+      --labelPrimary: #00FF41;
+      --systemBlue: #00FF41;
+      --systemGray6: #000000;
+      --systemGray5: #000000;
+      --systemGray4: #003B00;
+      --systemGray3: #008F11;
+      --systemGray2: #00FF41;
+      --systemGray: #00FF41;
+      --paddleGlow: 0 0 8px rgba(0, 255, 65, 0.7);
+      --ballGlow: 0 0 12px rgba(0, 255, 65, 0.9);
+    }
+
     @keyframes gradient {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -102,6 +116,34 @@
       100% { transform: scale(1); }
     }
 
+    @keyframes commentBoxAppear {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes matrix-fall {
+      0% {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      5% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+
     * {
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
@@ -123,6 +165,40 @@
       touch-action: manipulation;
     }
 
+    .developer-mode body {
+      background: #000;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .matrix-rain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      display: none;
+    }
+
+    .developer-mode .matrix-rain {
+      display: block;
+    }
+
+    .matrix-column {
+      position: absolute;
+      top: 0;
+      width: 1em;
+      height: 100%;
+      color: #00FF41;
+      font-size: 16px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      text-shadow: 0 0 5px #00FF41;
+      animation: matrix-fall linear infinite;
+    }
+
     .start-screen {
       display: flex;
       flex-direction: column;
@@ -138,6 +214,12 @@
       z-index: 30;
       transition: all 0.5s cubic-bezier(0.28, 0.11, 0.32, 1);
       will-change: transform, opacity;
+    }
+
+    .developer-mode .start-screen {
+      background: #000;
+      border-color: #003B00;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
     }
 
     .start-screen.slide-out {
@@ -158,6 +240,12 @@
       opacity: 0;
     }
 
+    .developer-mode .start-screen h1 {
+      background: linear-gradient(90deg, #00FF41, #00FF88, #00FF41);
+      background-size: 200% 200%;
+      animation: gradient 4s ease infinite, fadeIn 1.5s ease-out forwards;
+    }
+
     .start-screen input {
       padding: 12px;
       font-size: 1.2rem;
@@ -175,13 +263,28 @@
       opacity: 0;
     }
 
+    .developer-mode .start-screen input {
+      background: #000;
+      color: #00FF41;
+      border-color: #008F11;
+    }
+
     .start-screen input:focus {
       border-color: var(--systemBlue);
       box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
     }
 
+    .developer-mode .start-screen input:focus {
+      border-color: #00FF41;
+      box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.3);
+    }
+
     .start-screen input::placeholder {
       color: var(--systemGray);
+    }
+
+    .developer-mode .start-screen input::placeholder {
+      color: #008F11;
     }
 
     .start-screen button {
@@ -201,9 +304,19 @@
       max-width: 200px;
     }
 
+    .developer-mode .start-screen button {
+      background: #003B00;
+      color: #00FF41;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
+
     .start-screen button:hover {
       background: #0062CC;
       transform: scale(1.03);
+    }
+
+    .developer-mode .start-screen button:hover {
+      background: #008F11;
     }
 
     .tutorial-container {
@@ -221,6 +334,10 @@
       transition: opacity 0.5s cubic-bezier(0.28, 0.11, 0.32, 1);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+    }
+
+    .developer-mode .tutorial-container {
+      background: #000;
     }
 
     .tutorial-container.active {
@@ -316,6 +433,12 @@
       flex-direction: column;
     }
 
+    .developer-mode .tutorial-dialogue {
+      background: #000;
+      border-color: #008F11;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+    }
+
     .tutorial-dialogue.active {
       transform: translateY(0);
       opacity: 1;
@@ -330,6 +453,10 @@
       align-items: center;
     }
 
+    .developer-mode .tutorial-speaker {
+      color: #00FF41;
+    }
+
     .tutorial-speaker::before {
       content: "";
       display: inline-block;
@@ -338,6 +465,10 @@
       background-color: var(--systemBlue);
       border-radius: 50%;
       margin-right: 10px;
+    }
+
+    .developer-mode .tutorial-speaker::before {
+      background-color: #00FF41;
     }
 
     .tutorial-text-container {
@@ -363,6 +494,11 @@
       font-weight: 500;
     }
 
+    .developer-mode .tutorial-text {
+      color: #00FF41;
+      border-right-color: #00FF41;
+    }
+
     .tutorial-controls {
       display: flex;
       justify-content: flex-end;
@@ -384,9 +520,19 @@
       max-width: 100px;
     }
 
+    .developer-mode .tutorial-button {
+      background: #003B00;
+      color: #00FF41;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
+
     .tutorial-button:hover {
       background: #0062CC;
       transform: scale(1.03);
+    }
+
+    .developer-mode .tutorial-button:hover {
+      background: #008F11;
     }
 
     .container {
@@ -408,6 +554,12 @@
       flex-direction: column;
     }
 
+    .developer-mode .container {
+      background: #000;
+      border-color: #008F11;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+    }
+
     .container.slide-in {
       transform: translateX(0);
       opacity: 1;
@@ -426,6 +578,11 @@
       box-shadow: inset 0 2px 20px rgba(0, 0, 0, 0.3);
     }
 
+    .developer-mode .game-container {
+      background: linear-gradient(180deg, #000, #000);
+      box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.2);
+    }
+
     .paddle {
       position: absolute;
       width: 12px;
@@ -434,6 +591,10 @@
       border-radius: 6px;
       transition: top 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       box-shadow: var(--paddleGlow);
+    }
+
+    .developer-mode .paddle {
+      background: linear-gradient(90deg, #00FF41, #00FF88);
     }
 
     #playerPaddle {
@@ -460,6 +621,10 @@
       animation: ballPulse 0.1s infinite ease-in-out;
     }
 
+    .developer-mode .ball {
+      background: #00FF41;
+    }
+
     .score {
       position: absolute;
       color: var(--systemGray6);
@@ -468,6 +633,11 @@
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       opacity: 0.9;
       transition: transform 0.3s ease-out;
+    }
+
+    .developer-mode .score {
+      color: #00FF41;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.7);
     }
 
     .score.bounce {
@@ -497,6 +667,10 @@
       color: var(--labelPrimary);
     }
 
+    .developer-mode .bot-selection h2 {
+      color: #00FF41;
+    }
+
     .bot-container {
       display: flex;
       flex-direction: column;
@@ -518,9 +692,19 @@
       border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
+    .developer-mode .bot-card {
+      background: #000;
+      border-color: #008F11;
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+    }
+
     .bot-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .developer-mode .bot-card:hover {
+      box-shadow: 0 0 25px rgba(0, 255, 65, 0.5);
     }
 
     .bot-card img {
@@ -536,6 +720,10 @@
       font-weight: 600;
       margin: 0;
       color: var(--labelPrimary);
+    }
+
+    .developer-mode .bot-card p {
+      color: #00FF41;
     }
 
     .achievements-button {
@@ -554,9 +742,19 @@
       z-index: 10;
     }
 
+    .developer-mode .achievements-button {
+      background: #003B00;
+      color: #00FF41;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
+
     .achievements-button:hover {
       background: #0062CC;
       transform: scale(1.03);
+    }
+
+    .developer-mode .achievements-button:hover {
+      background: #008F11;
     }
 
     .leave-button {
@@ -575,9 +773,19 @@
       z-index: 10;
     }
 
+    .developer-mode .leave-button {
+      background: #003B00;
+      color: #00FF41;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
+
     .leave-button:hover {
       background: #7A7A7E;
       transform: scale(1.03);
+    }
+
+    .developer-mode .leave-button:hover {
+      background: #008F11;
     }
 
     .achievements-container {
@@ -595,6 +803,10 @@
       overflow-y: auto;
     }
 
+    .developer-mode .achievements-container {
+      background: rgba(0, 0, 0, 0.95);
+    }
+
     .achievements-container.active {
       display: flex;
     }
@@ -610,16 +822,30 @@
       border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
+    .developer-mode .achievement {
+      background: #000;
+      border-color: #008F11;
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+    }
+
     .achievement h3 {
       margin: 0 0 10px;
       font-size: 1.4rem;
       color: var(--systemBlue);
     }
 
+    .developer-mode .achievement h3 {
+      color: #00FF41;
+    }
+
     .achievement p {
       margin: 0;
       font-size: 1.2rem;
       color: var(--labelPrimary);
+    }
+
+    .developer-mode .achievement p {
+      color: #00FF41;
     }
 
     .touch-controls {
@@ -631,6 +857,10 @@
       justify-content: center;
       gap: 20px;
       z-index: 5;
+    }
+
+    .developer-mode .touch-controls {
+      bottom: 70px;
     }
 
     .touch-button {
@@ -646,6 +876,11 @@
       touch-action: manipulation;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       transition: transform 0.2s ease-out;
+    }
+
+    .developer-mode .touch-button {
+      background: rgba(0, 255, 65, 0.3);
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
     }
 
     .touch-button:active {
@@ -664,14 +899,27 @@
       width: 100%;
       max-width: 760px;
       opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      transform: translateY(10px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .developer-mode .comment-box {
+      background: rgba(0, 13, 8, 0.9);
+      border-color: rgba(0, 255, 65, 0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
     }
 
     .comment-box.active {
       display: flex;
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
+      animation: commentBoxAppear 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .comment-box.game-result {
+      animation: none;
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
 
     .comment-character {
@@ -707,11 +955,144 @@
       margin-bottom: 10px;
     }
 
+    .developer-mode .comment-speaker {
+      color: #00FF41;
+    }
+
     .comment-text {
       font-size: 1.1rem;
       color: var(--labelPrimary);
       margin: 0;
       white-space: pre-wrap;
+    }
+
+    .developer-mode .comment-text {
+      color: #00FF41;
+    }
+
+    .password-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 20px;
+    }
+
+    .password-container.active {
+      display: flex;
+    }
+
+    .password-input {
+      padding: 12px;
+      font-size: 1.2rem;
+      border: 1px solid var(--systemGray4);
+      border-radius: 10px;
+      margin-bottom: 15px;
+      width: 80%;
+      max-width: 280px;
+      background: white;
+      color: var(--labelPrimary);
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+    }
+
+    .developer-mode .password-input {
+      background: #000;
+      color: #00FF41;
+      border-color: #008F11;
+    }
+
+    .password-input:focus {
+      border-color: var(--systemBlue);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    }
+
+    .developer-mode .password-input:focus {
+      border-color: #00FF41;
+      box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.3);
+    }
+
+    .password-button {
+      background: var(--systemBlue);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      width: 80%;
+      max-width: 100px;
+    }
+
+    .developer-mode .password-button {
+      background: #003B00;
+      color: #00FF41;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
+
+    .password-button:hover {
+      background: #0062CC;
+      transform: scale(1.03);
+    }
+
+    .developer-mode .password-button:hover {
+      background: #008F11;
+    }
+
+    .error-message {
+      color: #FF3B30;
+      font-size: 1.2rem;
+      margin-top: 10px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+    }
+
+    .developer-mode .error-message {
+      color: #FF5555;
+    }
+
+    .error-message.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .ai-controls {
+      display: none;
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      justify-content: center;
+      gap: 10px;
+      z-index: 5;
+      padding: 10px;
+    }
+
+    .developer-mode .ai-controls {
+      display: flex;
+    }
+
+    .ai-control-button {
+      background: rgba(0, 255, 65, 0.3);
+      color: #00FF41;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    }
+
+    .ai-control-button:hover {
+      background: rgba(0, 255, 65, 0.5);
+      transform: scale(1.03);
     }
 
     @media (min-width: 768px) {
@@ -783,6 +1164,15 @@
         width: 100px;
         height: 140px;
       }
+
+      .ai-controls {
+        gap: 20px;
+      }
+
+      .ai-control-button {
+        padding: 10px 20px;
+        font-size: 1rem;
+      }
     }
 
     @media (min-width: 1024px) {
@@ -802,6 +1192,7 @@
   </style>
 </head>
 <body>
+  <div class="matrix-rain" id="matrixRain"></div>
   <div class="start-screen" id="startScreen">
     <h1>Pong By KVRELIA</h1>
     <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20" aria-label="Player name input">
@@ -812,17 +1203,22 @@
     <div class="tutorial-content">
       <div class="tutorial-character-container">
         <div class="tutorial-character" id="tutorialCharacter">
-          <img src="https://i.imgur.com/C60VL7M.png" alt="陽菜ポン">
+          <img id="tutorialCharacterImage" src="https://i.imgur.com/C60VL7M.png" alt="Hina Pon">
         </div>
       </div>
       <div class="tutorial-dialogue-container">
         <div class="tutorial-dialogue" id="tutorialDialogue">
-          <div class="tutorial-speaker">陽菜ポン</div>
+          <div class="tutorial-speaker" id="tutorialSpeaker">Hina Pon</div>
           <div class="tutorial-text-container">
             <div class="tutorial-text" id="tutorialText"></div>
           </div>
           <div class="tutorial-controls" id="tutorialControls">
             <button class="tutorial-button" id="tutorialNextButton">Continue</button>
+          </div>
+          <div class="password-container" id="passwordContainer">
+            <input type="text" id="passwordInput" class="password-input" placeholder="Enter password" maxlength="20" aria-label="Password input">
+            <button class="password-button" id="passwordButton" aria-label="Submit password">Submit</button>
+            <div class="error-message" id="errorMessage">Wrong key, coder! Try again—no stack overflow allowed!</div>
           </div>
         </div>
       </div>
@@ -859,13 +1255,19 @@
         <div class="touch-button" id="upButton">↑</div>
         <div class="touch-button" id="downButton">↓</div>
       </div>
+      <div class="ai-controls" id="aiControls">
+        <button class="ai-control-button" id="aiEasierButton">Easier AI</button>
+        <button class="ai-control-button" id="aiHarderButton">Harder AI</button>
+        <button class="ai-control-button" id="aiPreciseButton">Precise AI</button>
+        <button class="ai-control-button" id="aiRandomButton">Random AI</button>
+      </div>
     </div>
     <div class="comment-box" id="commentBox">
       <div class="comment-character" id="commentCharacter">
-        <img src="https://i.imgur.com/C60VL7M.png" alt="陽菜ポン">
+        <img id="commentCharacterImage" src="https://i.imgur.com/C60VL7M.png" alt="Hina Pon">
       </div>
       <div class="comment-content">
-        <div class="comment-speaker">陽菜ポン</div>
+        <div class="comment-speaker" id="commentSpeaker">Hina Pon</div>
         <p class="comment-text" id="commentText"></p>
       </div>
     </div>
@@ -880,6 +1282,7 @@
     // Game variables
     let playerName = 'Player';
     let isCharacterHidden = false;
+    let developerMode = false;
     const playerNameInput = document.getElementById('playerNameInput');
     const startButton = document.getElementById('startButton');
     const startScreen = document.getElementById('startScreen');
@@ -892,6 +1295,17 @@
     const upButton = document.getElementById('upButton');
     const downButton = document.getElementById('downButton');
     const leaveButton = document.getElementById('leaveButton');
+    const matrixRain = document.getElementById('matrixRain');
+    const aiControls = document.getElementById('aiControls');
+    const aiEasierButton = document.getElementById('aiEasierButton');
+    const aiHarderButton = document.getElementById('aiHarderButton');
+    const aiPreciseButton = document.getElementById('aiPreciseButton');
+    const aiRandomButton = document.getElementById('aiRandomButton');
+
+    // AI difficulty modifiers
+    let aiDifficultyModifier = 1.0;
+    let aiPrecisionModifier = 1.0;
+    let aiRandomnessModifier = 0.0;
 
     // Pong game elements
     const playerPaddle = document.getElementById('playerPaddle');
@@ -903,29 +1317,37 @@
     // Tutorial elements
     const tutorialContainer = document.getElementById('tutorialContainer');
     const tutorialCharacter = document.getElementById('tutorialCharacter');
+    const tutorialCharacterImage = document.getElementById('tutorialCharacterImage');
     const tutorialDialogue = document.getElementById('tutorialDialogue');
+    const tutorialSpeaker = document.getElementById('tutorialSpeaker');
     const tutorialText = document.getElementById('tutorialText');
     const tutorialControls = document.getElementById('tutorialControls');
     const tutorialNextButton = document.getElementById('tutorialNextButton');
+    const passwordContainer = document.getElementById('passwordContainer');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordButton = document.getElementById('passwordButton');
+    const errorMessage = document.getElementById('errorMessage');
 
     // Comment box elements
     const commentBox = document.getElementById('commentBox');
     const commentCharacter = document.getElementById('commentCharacter');
+    const commentCharacterImage = document.getElementById('commentCharacterImage');
+    const commentSpeaker = document.getElementById('commentSpeaker');
     const commentText = document.getElementById('commentText');
 
     // Achievements elements
     const achievementsContainer = document.getElementById('achievementsContainer');
     const achievementList = document.getElementById('achievementList');
 
-    // Tutorial script
-    const tutorialScript = [
+    // Tutorial scripts
+    const normalTutorialScript = [
       { text: "Welcome to the tutorial!", emotion: "happy" },
       { text: "Oh. I mean, Pong is literally the easiest thing in the world, but, just... Yes. Tutorial!", emotion: "annoyed" },
       { text: "Don't you just love having to do tutorials in games you have played before and already know by heart!", emotion: "sarcastic" },
-      { text: "hehehe... You do not need this long tutorial you know?", emotion: "happy" },
+      { text: "hehehe… You do not need this long tutorial you know?", emotion: "happy" },
       { text: "I'm just going to constantly bug you about how you need to listen to this tutorial.", emotion: "sarcastic" },
-      { text: "eh...eh...((cough) (Cough) totally not what I'm doing right now.", emotion: "nervous" },
-      { text: "Anyway, KVRELIAKVRI Designed this model in like 4 minutes using- What? I have to actually do a tutorial? Oh- Right. Anyway,", emotion: "flustered" },
+      { text: "eh...eh...((cough) (Cough) totally not what I'm doing right now.)", emotion: "nervous" },
+      { text: "Anyway, KVRELIAKVRI Designed this model in like 4 days using- What? I have to actually do a tutorial? Oh- Right. Anyway,", emotion: "flustered" },
       { text: "Let's get started with the actual tutorial... ((even though you probably don't need it)", emotion: "normal" },
       { text: "Use your mouse or touch controls to move the paddle up and down. The goal is to hit the ball past your opponent.", emotion: "explaining" },
       { text: "There are different AI opponents with varying difficulty levels. Choose wisely!", emotion: "serious" },
@@ -934,11 +1356,31 @@
       { text: "Or maybe you just skipped through... either way, let's play!", emotion: "sarcastic" }
     ];
 
+    const developerTutorialScript = [
+      { text: "Welcome to Developer Mode!", emotion: "serious" },
+      { text: "You've unlocked the secret developer features. Nice work, coder.", emotion: "serious" },
+      { text: "This mode has a special Matrix-style theme and some behind-the-scenes insights.", emotion: "explaining" },
+      { text: "The game mechanics remain the same, but now you're playing in style.", emotion: "happy" },
+      { text: "The AI opponents have been enhanced with developer-level difficulty controls.", emotion: "serious" },
+      { text: "Use the new AI controls at the bottom to adjust the bot's behavior.", emotion: "explaining" },
+      { text: "Watch out for the Rich CEO - he's been optimized for maximum performance.", emotion: "nervous" },
+      { text: "The matrix rain effect is purely cosmetic, but it makes you look cool, right?", emotion: "sarcastic" },
+      { text: "All UI elements have been recolored to match the hacker aesthetic.", emotion: "explaining" },
+      { text: "Remember - with great power comes great responsibility.", emotion: "serious" },
+      { text: "Now go show those AI opponents what a real developer can do!", emotion: "happy" }
+    ];
+
     // Bot descriptions for pre-match
-    const botDescriptions = {
+    const normalBotDescriptions = {
       1: { text: "This is your Grandpa! He's slow and might miss the ball sometimes, but he's got heart!", emotion: "happy" },
       2: { text: "A-Are you sure? It's actually harder than you think.", emotion: "nervous" },
       3: { text: "Meet the Rich CEO! He's fast and confident, but his arrogance might make him slip up!", emotion: "sarcastic" }
+    };
+
+    const developerBotDescriptions = {
+      1: { text: "Grandpa's AI has been optimized. He's still slow, but now with better prediction algorithms.", emotion: "serious" },
+      2: { text: "The 'Normal' AI is anything but normal now. It's been upgraded with machine learning.", emotion: "nervous" },
+      3: { text: "The Rich CEO has invested in performance enhancements. Good luck beating his optimized paddle.", emotion: "sarcastic" }
     };
 
     // Move comments
@@ -959,14 +1401,14 @@
         default: ["Wow, nice shot!", "Point for you!", "Great score!"],
         sana: ["Yay, you scored! You're so good at this!", "Amazing point! Keep shining!", "Wow, that was beautiful!"],
         rsvlt26: ["Score! Leverage paddle hits for consistent points.", "Nice point. Optimize for repeated trajectories.", "Good score. Analyze AI patterns for more."],
-        aiden: ["You scored? Must be a glitch.", "Oh, a point? Enjoy it while it lasts.", "Scored, huh? Don’t get used to it."]
+        aiden: ["You scored? Must be a glitch.", "Oh, a point? Enjoy it while it lasts.", "Scored, huh? Don't get used to it."]
       },
       concede: {
         default: ["Oh no, hang in there!", "Tough one! Keep trying!", "You'll bounce back!"],
-        sana: ["It’s okay, you’ll get them next time!", "Don’t worry, you’re still doing great!", "Aww, you’ll come back stronger!"],
+        sana: ["It's okay, you'll get them next time!", "Don't worry, you're still doing great!", "Aww, you'll come back stronger!"],
         rsvlt26: ["Conceded. Study AI paddle movement for counters.", "Point lost. Adjust strategy for ball speed.", "AI scored. Refine your defensive positioning."],
-        aiden: ["Let them score again, why don’t you?", "Nice job handing them a point.", "What, just giving up now?"]
-    }
+        aiden: ["Let them score again, why don't you?", "Nice job handing them a point.", "What, just giving up now?"]
+      }
     };
 
     let currentTutorialStep = 0;
@@ -989,15 +1431,29 @@
     let lastCommentTime = 0;
     let lastBallX = 0;
     let achievements = {
-      touchCharacter: { name: "You actually tried this?", description: "Touched the tutorial character.", unlocked: false }
+      touchCharacter: { name: "You actually tried this?", description: "Touched the tutorial character.", unlocked: false },
+      developerMode: { name: "1337 H4X0R", description: "Unlocked Developer Mode.", unlocked: false }
+    };
+
+    const characterImageMap = {
+      serious: 'https://i.imgur.com/r0Cxnaw.png',
+      flustered: 'https://i.imgur.com/cxszVTW.png',
+      sarcastic: 'https://i.imgur.com/DujUpl5.png',
+      nervous: 'https://i.imgur.com/zgiro08.png',
+      default: 'https://i.imgur.com/C60VL7M.png'
     };
 
     // Initialize the game
     function initGame() {
       detectMobile();
-      startButton.addEventListener('click', startTutorial);
+      startButton.addEventListener('click', startGame);
       playerNameInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') startTutorial();
+        if (e.key === 'Enter') startGame();
+      });
+
+      passwordButton.addEventListener('click', verifyPassword);
+      passwordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') verifyPassword();
       });
 
       botCards.forEach((card, index) => {
@@ -1052,8 +1508,52 @@
       tutorialCharacter.addEventListener('click', handleCharacterTouch);
       tutorialCharacter.addEventListener('touchstart', handleCharacterTouch, { passive: true });
 
+      // AI control buttons
+      aiEasierButton.addEventListener('click', () => {
+        aiDifficultyModifier = Math.max(0.5, aiDifficultyModifier - 0.1);
+        showComment("AI difficulty decreased", "happy");
+      });
+
+      aiHarderButton.addEventListener('click', () => {
+        aiDifficultyModifier = Math.min(2.0, aiDifficultyModifier + 0.1);
+        showComment("AI difficulty increased", "nervous");
+      });
+
+      aiPreciseButton.addEventListener('click', () => {
+        aiPrecisionModifier = aiPrecisionModifier === 1.0 ? 2.0 : 1.0;
+        showComment(`AI precision ${aiPrecisionModifier === 2.0 ? "increased" : "normal"}`, "serious");
+      });
+
+      aiRandomButton.addEventListener('click', () => {
+        aiRandomnessModifier = aiRandomnessModifier === 0.0 ? 0.5 : 0.0;
+        showComment(`AI randomness ${aiRandomnessModifier === 0.5 ? "enabled" : "disabled"}`, "sarcastic");
+      });
+
       updateCharacterHideOffset();
       window.addEventListener('resize', updateCharacterHideOffset);
+    }
+
+    function createMatrixRain() {
+      const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+      const columns = Math.floor(window.innerWidth / 20);
+      
+      for (let i = 0; i < columns; i++) {
+        const column = document.createElement('div');
+        column.className = 'matrix-column';
+        column.style.left = `${i * 20}px`;
+        column.style.animationDuration = `${Math.random() * 2000 + 3000}ms`;
+        column.style.animationDelay = `${Math.random() * 2000}ms`;
+        
+        // Fill column with random characters
+        let content = '';
+        const length = Math.floor(Math.random() * 10) + 10;
+        for (let j = 0; j < length; j++) {
+          content += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        column.textContent = content;
+        matrixRain.appendChild(column);
+      }
     }
 
     function updateCharacterHideOffset() {
@@ -1138,11 +1638,13 @@
     }
 
     function updatePreMatchDialogue() {
+      const botDescriptions = developerMode ? developerBotDescriptions : normalBotDescriptions;
       const desc = botDescriptions[botDifficulty];
       tutorialText.style.animation = 'none';
       void tutorialText.offsetWidth;
       tutorialText.style.animation = 'textTyping 3s steps(40, end)';
       tutorialCharacter.className = `tutorial-character ${desc.emotion}`;
+      setCharacterImage(desc.emotion);
       tutorialText.textContent = desc.text;
 
       tutorialControls.innerHTML = '';
@@ -1182,6 +1684,7 @@
         tutorialText.style.animation = 'textTyping 3s steps(40, end)';
         tutorialText.textContent = "Are you REAALLY sure?";
         tutorialCharacter.className = 'tutorial-character nervous';
+        setCharacterImage('nervous');
         tutorialControls.innerHTML = '';
         const yesButton = document.createElement('button');
         yesButton.className = 'tutorial-button';
@@ -1215,6 +1718,7 @@
       tutorialText.style.animation = 'textTyping 3s steps(40, end)';
       tutorialText.textContent = "Huh? No? You said yes earlier, so no leaving now.";
       tutorialCharacter.className = 'tutorial-character sarcastic';
+      setCharacterImage('sarcastic');
       tutorialControls.innerHTML = '';
       const yesButton = document.createElement('button');
       yesButton.className = 'tutorial-button';
@@ -1236,21 +1740,22 @@
       lastCommentTime = now;
 
       commentText.textContent = text;
+      setCharacterImage(emotion, true);
       commentCharacter.className = `comment-character ${emotion}`;
       commentBox.classList.add('active');
       setTimeout(() => {
-        if (!gameActive || commentText.classList.contains('game-result')) {
+        if (!gameActive || commentBox.classList.contains('game-result')) {
           commentBox.classList.remove('active');
         }
       }, 1500);
     }
 
     function showGameResult(message, emotion) {
-      commentText.classList.add('game-result');
+      commentBox.classList.add('game-result');
       showComment(message, emotion);
       setTimeout(() => {
         leaveGame();
-        commentText.classList.remove('game-result');
+        commentBox.classList.remove('game-result');
       }, 3000);
     }
 
@@ -1315,18 +1820,32 @@
       ballY += ballSpeedY;
       updateBallPosition();
 
+      // AI movement with modifiers
+      let aiTargetY = ballY;
+      let aiReactionSpeed = 0.05;
+      let aiRandomFactor = 0;
+      
       switch(botDifficulty) {
         case 1:
-          if (Math.random() > 0.3) {
-            aiPaddleY += (ballY - aiPaddleY) * 0.05;
+          aiReactionSpeed = 0.05 * aiDifficultyModifier;
+          aiRandomFactor = 0.3 * aiRandomnessModifier;
+          if (Math.random() > aiRandomFactor) {
+            aiTargetY += (Math.random() * 100 - 50) * aiRandomnessModifier;
+            aiPaddleY += (aiTargetY - aiPaddleY) * aiReactionSpeed * aiPrecisionModifier;
           }
           break;
         case 2:
-          aiPaddleY = ballY - (isMobile ? 40 : 50);
+          aiReactionSpeed = 1.0 * aiDifficultyModifier;
+          aiRandomFactor = 0.1 * aiRandomnessModifier;
+          aiTargetY = ballY - (isMobile ? 40 : 50) + (Math.random() * 40 - 20) * aiRandomFactor;
+          aiPaddleY += (aiTargetY - aiPaddleY) * aiReactionSpeed * aiPrecisionModifier;
           break;
         case 3:
-          if (Math.random() > 0.1) {
-            aiPaddleY += (ballY - aiPaddleY + (Math.random() * 20 - 10)) * 0.25;
+          aiReactionSpeed = 0.25 * aiDifficultyModifier;
+          aiRandomFactor = 0.1 * aiRandomnessModifier;
+          if (Math.random() > aiRandomFactor) {
+            aiTargetY += (Math.random() * 20 - 10) * aiRandomnessModifier;
+            aiPaddleY += (aiTargetY - aiPaddleY) * aiReactionSpeed * aiPrecisionModifier;
           }
           break;
       }
@@ -1351,7 +1870,7 @@
           ballY >= playerPaddleY - ballSize &&
           ballY <= playerPaddleY + paddleHeight) {
         playerHit = true;
-        ballSpeedX = Math.abs(ballSpeedX) * 1.1;
+        ballSpeedX = Math.abs(ballSpeedX) * (developerMode ? 1.15 : 1.1);
         const hitPosition = (ballY - playerPaddleY) / paddleHeight;
         ballSpeedY = 8 * (hitPosition - 0.5);
         ballX = 15 + paddleWidth;
@@ -1362,7 +1881,7 @@
           ballX <= containerWidth - 15 &&
           ballY >= aiPaddleY - ballSize &&
           ballY <= aiPaddleY + paddleHeight) {
-        ballSpeedX = -Math.abs(ballSpeedX) * 1.1;
+        ballSpeedX = -Math.abs(ballSpeedX) * (developerMode ? 1.15 : 1.1);
         const hitPosition = (ballY - aiPaddleY) / paddleHeight;
         ballSpeedY = 8 * (hitPosition - 0.5);
         ballX = containerWidth - 15 - paddleWidth - ballSize;
@@ -1443,13 +1962,95 @@
     }
 
     function sanitizeInput(input) {
-      return input.replace(/</g, "<").replace(/>/g, ">");
+      return input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function setCharacterImage(emotion, isComment = false) {
+      const imageElement = isComment ? commentCharacterImage : tutorialCharacterImage;
+      if (developerMode) {
+        // In developer mode, always use the serious image (r0Cxnaw)
+        imageElement.src = 'https://i.imgur.com/r0Cxnaw.png';
+      } else {
+        // In normal mode, use the default image
+        imageElement.src = 'https://i.imgur.com/C60VL7M.png';
+      }
+    }
+
+    function updateCharacterName() {
+      const name = developerMode ? 'Hana Ponko' : 'Hina Pon';
+      tutorialSpeaker.textContent = name;
+      commentSpeaker.textContent = name;
+      tutorialCharacterImage.alt = name;
+      commentCharacterImage.alt = name;
+    }
+
+    function startGame() {
+      playerName = sanitizeInput(playerNameInput.value.trim()) || 'Player';
+      const lowerName = playerName.toLowerCase();
+
+      if (lowerName === 'rsvlt26') {
+        startScreen.classList.add('slide-out');
+        setTimeout(() => {
+          startScreen.style.display = 'none';
+          showPasswordPrompt();
+        }, 500);
+      } else {
+        startTutorial();
+      }
+    }
+
+    function showPasswordPrompt() {
+      tutorialContainer.classList.add('active');
+      setTimeout(() => {
+        tutorialDialogue.classList.add('active');
+        tutorialText.style.animation = 'none';
+        void tutorialText.offsetWidth;
+        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
+        tutorialText.textContent = "Accessing Developer Mode requires a key. Think like a <div>-ine coder—don't console.log() your secrets! Your password should be as secure as !important in CSS, as dynamic as a Promise.resolve(), and as precise as a === strict check. No NaN business—only pure, unminified genius allowed. Enter the <!-- answer --> below:";
+        tutorialCharacter.className = 'tutorial-character serious';
+        setCharacterImage('serious');
+        tutorialControls.style.display = 'none';
+        passwordContainer.classList.add('active');
+      }, 300);
+    }
+
+    function verifyPassword() {
+      const password = passwordInput.value.trim();
+      if (password === 'BYKVRELIA') {
+        developerMode = true;
+        document.body.classList.add('developer-mode');
+        createMatrixRain();
+        updateCharacterName();
+        passwordContainer.classList.remove('active');
+        errorMessage.classList.remove('active');
+        tutorialControls.style.display = 'flex';
+        if (!achievements.developerMode.unlocked) {
+          achievements.developerMode.unlocked = true;
+          updateAchievements();
+        }
+        startTutorial();
+      } else {
+        tutorialText.style.animation = 'none';
+        void tutorialText.offsetWidth;
+        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
+        tutorialText.textContent = "Wrong key, coder! Try again—no stack overflow allowed!";
+        tutorialCharacter.className = 'tutorial-character nervous';
+        setCharacterImage('nervous');
+        errorMessage.classList.add('active');
+        passwordInput.value = '';
+        setTimeout(() => {
+          errorMessage.classList.remove('active');
+          showPasswordPrompt();
+        }, 2000);
+      }
     }
 
     function startTutorial() {
       playerName = sanitizeInput(playerNameInput.value.trim()) || 'Player';
       
       const lowerName = playerName.toLowerCase();
+      const tutorialScript = developerMode ? developerTutorialScript : normalTutorialScript;
+      
       if (lowerName === 'sana' || lowerName === 'sawna') {
         tutorialScript[0].text = "O-oh! H-hi Sana! Welcome to the tutorial!";
         tutorialScript[0].emotion = "nervous";
@@ -1457,8 +2058,8 @@
         tutorialScript[0].text = "A-Aiden?! *ahem* I mean... Welcome to the tutorial!";
         tutorialScript[0].emotion = "flustered";
       } else if (lowerName === 'rsvlt26') {
-        tutorialScript[0].text = "Oh! RSVLT26! Welcome back! Ready for the tutorial?";
-        tutorialScript[0].emotion = "happy";
+        tutorialScript[0].text = "Oh! Developer Mode activated! Welcome to the tutorial!";
+        tutorialScript[0].emotion = "serious";
       }
       
       startScreen.classList.add('slide-out');
@@ -1469,6 +2070,7 @@
     }
 
     function showTutorial() {
+      updateCharacterName();
       tutorialContainer.classList.add('active');
       setTimeout(() => {
         tutorialDialogue.classList.add('active');
@@ -1477,6 +2079,8 @@
     }
 
     function updateTutorialStep() {
+      const tutorialScript = developerMode ? developerTutorialScript : normalTutorialScript;
+      
       if (currentTutorialStep >= tutorialScript.length) {
         endTutorial();
         return;
@@ -1486,7 +2090,7 @@
       
       tutorialText.style.animation = 'none';
       if (isCharacterHidden) {
-        tutorialCharacter.className = `tutorial-character hidden`;
+        tutorialCharacter.className = 'tutorial-character hidden';
         if (step.emotion !== 'normal' && step.emotion !== 'explaining' && step.emotion !== 'serious') {
           tutorialCharacter.classList.add(step.emotion);
         }
@@ -1496,6 +2100,7 @@
           tutorialCharacter.classList.add(step.emotion);
         }
       }
+      setCharacterImage(step.emotion);
       void tutorialText.offsetWidth;
       
       tutorialText.style.animation = 'textTyping 3s steps(40, end)';
