@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Pong By KVRELIA</title>
+  <link rel="preload" href="https://i.imgur.com/C60VL7M.png" as="image">
   <style>
     :root {
       --systemBlue: #007AFF;
@@ -17,20 +18,27 @@
       --systemBackground: #ffffff;
       --paddleGlow: 0 0 8px rgba(255, 255, 255, 0.5);
       --ballGlow: 0 0 12px rgba(0, 122, 255, 0.7);
+      --borderColor: rgba(0, 0, 0, 0.04);
+      --textColor: #000000;
+      --buttonBackground: #007AFF;
+      --buttonHover: #0062CC;
+      --scoreColor: #F2F2F7;
     }
 
-    :root.developer-mode {
-      --systemBackground: #000000;
-      --labelPrimary: #00FF41;
-      --systemBlue: #00FF41;
-      --systemGray6: #000000;
-      --systemGray5: #000000;
-      --systemGray4: #003B00;
-      --systemGray3: #008F11;
-      --systemGray2: #00FF41;
-      --systemGray: #00FF41;
-      --paddleGlow: 0 0 8px rgba(0, 255, 65, 0.7);
-      --ballGlow: 0 0 12px rgba(0, 255, 65, 0.9);
+    .developer-mode {
+      --systemBackground: #1C2526;
+      --systemGray6: #1C2526;
+      --labelPrimary: #00FF00;
+      --systemBlue: #00FF00;
+      --systemGray: #00FF00;
+      --systemGray4: #00FF00;
+      --paddleGlow: 0 0 8px rgba(0, 255, 0, 0.5);
+      --ballGlow: 0 0 12px rgba(0, 255, 0, 0.7);
+      --borderColor: rgba(0, 255, 0, 0.2);
+      --textColor: #00FF00;
+      --buttonBackground: #00FF00;
+      --buttonHover: #00CC00;
+      --scoreColor: #00FF00;
     }
 
     @keyframes gradient {
@@ -74,14 +82,14 @@
 
     @keyframes characterFlustered {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15) rotate(8deg); }
+      50% { transform: scale(1.15) rotate(12deg); }
     }
 
     @keyframes characterNervous {
       0%, 100% { transform: translateX(0) rotate(0deg); }
-      25% { transform: translateX(-5px) rotate(-3deg); }
-      50% { transform: translateX(5px) rotate(3deg); }
-      75% { transform: translateX(-5px) rotate(-3deg); }
+      25% { transform: translateX(-5px) rotate(-3deg) scale(1.05); }
+      50% { transform: translateX(5px) rotate(3deg) scale(1.05); }
+      75% { transform: translateX(-5px) rotate(-3deg) scale(1.05); }
     }
 
     @keyframes float {
@@ -92,16 +100,6 @@
     @keyframes scaleIn {
       from { transform: scale(0.9); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes characterHide {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(var(--hide-offset)); }
-    }
-
-    @keyframes characterPeek {
-      0%, 100% { transform: translateY(var(--hide-offset)); }
-      50% { transform: translateY(calc(var(--hide-offset) - 50px)); }
     }
 
     @keyframes paddleDynamicMove {
@@ -127,21 +125,9 @@
       }
     }
 
-    @keyframes matrix-fall {
-      0% {
-        transform: translateY(-100%);
-        opacity: 0;
-      }
-      5% {
-        opacity: 1;
-      }
-      90% {
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(100vh);
-        opacity: 0;
-      }
+    @keyframes aiMiss {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(20px); }
     }
 
     * {
@@ -165,40 +151,6 @@
       touch-action: manipulation;
     }
 
-    .developer-mode body {
-      background: #000;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .matrix-rain {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      pointer-events: none;
-      display: none;
-    }
-
-    .developer-mode .matrix-rain {
-      display: block;
-    }
-
-    .matrix-column {
-      position: absolute;
-      top: 0;
-      width: 1em;
-      height: 100%;
-      color: #00FF41;
-      font-size: 16px;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      text-shadow: 0 0 5px #00FF41;
-      animation: matrix-fall linear infinite;
-    }
-
     .start-screen {
       display: flex;
       flex-direction: column;
@@ -207,19 +159,13 @@
       border-radius: 14px;
       padding: 30px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      border: 1px solid rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--borderColor);
       max-width: 90%;
       width: 90%;
       text-align: center;
       z-index: 30;
       transition: all 0.5s cubic-bezier(0.28, 0.11, 0.32, 1);
       will-change: transform, opacity;
-    }
-
-    .developer-mode .start-screen {
-      background: #000;
-      border-color: #003B00;
-      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
     }
 
     .start-screen.slide-out {
@@ -241,9 +187,8 @@
     }
 
     .developer-mode .start-screen h1 {
-      background: linear-gradient(90deg, #00FF41, #00FF88, #00FF41);
-      background-size: 200% 200%;
-      animation: gradient 4s ease infinite, fadeIn 1.5s ease-out forwards;
+      background: none;
+      color: var(--textColor);
     }
 
     .start-screen input {
@@ -264,9 +209,9 @@
     }
 
     .developer-mode .start-screen input {
-      background: #000;
-      color: #00FF41;
-      border-color: #008F11;
+      background: #1C2526;
+      border-color: var(--systemGray4);
+      color: var(--textColor);
     }
 
     .start-screen input:focus {
@@ -275,20 +220,15 @@
     }
 
     .developer-mode .start-screen input:focus {
-      border-color: #00FF41;
-      box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.3);
+      box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.1);
     }
 
     .start-screen input::placeholder {
       color: var(--systemGray);
     }
 
-    .developer-mode .start-screen input::placeholder {
-      color: #008F11;
-    }
-
     .start-screen button {
-      background: var(--systemBlue);
+      background: var(--buttonBackground);
       color: #FFFFFF;
       border: none;
       padding: 14px 28px;
@@ -305,18 +245,12 @@
     }
 
     .developer-mode .start-screen button {
-      background: #003B00;
-      color: #00FF41;
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      color: #000000;
     }
 
     .start-screen button:hover {
-      background: #0062CC;
+      background: var(--buttonHover);
       transform: scale(1.03);
-    }
-
-    .developer-mode .start-screen button:hover {
-      background: #008F11;
     }
 
     .tutorial-container {
@@ -337,7 +271,7 @@
     }
 
     .developer-mode .tutorial-container {
-      background: #000;
+      background: #1C2526;
     }
 
     .tutorial-container.active {
@@ -358,7 +292,7 @@
     .tutorial-character-container {
       position: relative;
       width: 300px;
-      height: 420px;
+      height: 360px;
       margin-bottom: 30px;
       display: flex;
       justify-content: center;
@@ -370,13 +304,17 @@
       width: 100%;
       height: 100%;
       animation: characterBounce 3s infinite ease-in-out;
-      cursor: pointer;
     }
 
     .tutorial-character img {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      border: 2px solid transparent;
+    }
+
+    .developer-mode .tutorial-character img {
+      border-color: rgba(0, 255, 0, 0.2);
     }
 
     .tutorial-character.happy {
@@ -388,7 +326,7 @@
     }
 
     .tutorial-character.sarcastic {
-      animation: characterBounce 1.5s infinite ease-in-out;
+      animation: characterNervous 0.5s infinite ease-in-out;
     }
 
     .tutorial-character.nervous {
@@ -408,10 +346,6 @@
       transform: scale(1);
     }
 
-    .tutorial-character.hidden {
-      animation: characterHide 0.5s forwards, characterPeek 2s infinite ease-in-out 0.5s;
-    }
-
     .tutorial-dialogue-container {
       flex: 1;
       min-width: 0;
@@ -424,7 +358,7 @@
       padding: 20px;
       width: 100%;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      border: 1px solid rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--borderColor);
       transform: translateY(20px);
       opacity: 0;
       transition: all 0.5s cubic-bezier(0.28, 0.11, 0.32, 1);
@@ -434,9 +368,8 @@
     }
 
     .developer-mode .tutorial-dialogue {
-      background: #000;
-      border-color: #008F11;
-      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+      background: #1C2526;
+      border-color: var(--borderColor);
     }
 
     .tutorial-dialogue.active {
@@ -454,7 +387,7 @@
     }
 
     .developer-mode .tutorial-speaker {
-      color: #00FF41;
+      color: var(--textColor);
     }
 
     .tutorial-speaker::before {
@@ -468,7 +401,7 @@
     }
 
     .developer-mode .tutorial-speaker::before {
-      background-color: #00FF41;
+      background-color: var(--textColor);
     }
 
     .tutorial-text-container {
@@ -492,11 +425,11 @@
       min-height: 100%;
       display: inline-block;
       font-weight: 500;
+      color: var(--textColor);
     }
 
     .developer-mode .tutorial-text {
-      color: #00FF41;
-      border-right-color: #00FF41;
+      border-right-color: var(--textColor);
     }
 
     .tutorial-controls {
@@ -507,7 +440,7 @@
     }
 
     .tutorial-button {
-      background: var(--systemBlue);
+      background: var(--buttonBackground);
       color: #FFFFFF;
       border: none;
       padding: 12px 24px;
@@ -521,18 +454,12 @@
     }
 
     .developer-mode .tutorial-button {
-      background: #003B00;
-      color: #00FF41;
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      color: #000000;
     }
 
     .tutorial-button:hover {
-      background: #0062CC;
+      background: var(--buttonHover);
       transform: scale(1.03);
-    }
-
-    .developer-mode .tutorial-button:hover {
-      background: #008F11;
     }
 
     .container {
@@ -541,7 +468,7 @@
       border-radius: 14px;
       padding: 20px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      border: 1px solid rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--borderColor);
       width: 90%;
       max-width: 800px;
       max-height: 90vh;
@@ -550,14 +477,11 @@
       transition: all 0.6s cubic-bezier(0.28, 0.11, 0.32, 1);
       will-change: transform, opacity;
       overflow: hidden;
-      display: flex;
       flex-direction: column;
     }
 
     .developer-mode .container {
-      background: #000;
-      border-color: #008F11;
-      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+      background: #1C2526;
     }
 
     .container.slide-in {
@@ -576,11 +500,7 @@
       overflow: hidden;
       touch-action: none;
       box-shadow: inset 0 2px 20px rgba(0, 0, 0, 0.3);
-    }
-
-    .developer-mode .game-container {
-      background: linear-gradient(180deg, #000, #000);
-      box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.2);
+      border: 1px solid var(--borderColor);
     }
 
     .paddle {
@@ -594,7 +514,7 @@
     }
 
     .developer-mode .paddle {
-      background: linear-gradient(90deg, #00FF41, #00FF88);
+      background: linear-gradient(90deg, #00FF00, #00CC00);
     }
 
     #playerPaddle {
@@ -611,6 +531,10 @@
       animation: paddleDynamicMove 0.3s ease-out;
     }
 
+    .paddle.ai-miss {
+      animation: aiMiss 0.5s ease-out;
+    }
+
     .ball {
       position: absolute;
       width: 15px;
@@ -622,22 +546,17 @@
     }
 
     .developer-mode .ball {
-      background: #00FF41;
+      background: var(--systemBlue);
     }
 
     .score {
       position: absolute;
-      color: var(--systemGray6);
+      color: var(--scoreColor);
       font-size: 2rem;
       font-weight: 600;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       opacity: 0.9;
       transition: transform 0.3s ease-out;
-    }
-
-    .developer-mode .score {
-      color: #00FF41;
-      text-shadow: 0 0 10px rgba(0, 255, 65, 0.7);
     }
 
     .score.bounce {
@@ -667,10 +586,6 @@
       color: var(--labelPrimary);
     }
 
-    .developer-mode .bot-selection h2 {
-      color: #00FF41;
-    }
-
     .bot-container {
       display: flex;
       flex-direction: column;
@@ -689,22 +604,17 @@
       width: 80%;
       max-width: 300px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      border: 1px solid rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--borderColor);
     }
 
     .developer-mode .bot-card {
-      background: #000;
-      border-color: #008F11;
-      box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+      background: #1C2526;
+      border-color: var(--borderColor);
     }
 
     .bot-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    }
-
-    .developer-mode .bot-card:hover {
-      box-shadow: 0 0 25px rgba(0, 255, 65, 0.5);
     }
 
     .bot-card img {
@@ -720,41 +630,6 @@
       font-weight: 600;
       margin: 0;
       color: var(--labelPrimary);
-    }
-
-    .developer-mode .bot-card p {
-      color: #00FF41;
-    }
-
-    .achievements-button {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: var(--systemBlue);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
-      z-index: 10;
-    }
-
-    .developer-mode .achievements-button {
-      background: #003B00;
-      color: #00FF41;
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-    }
-
-    .achievements-button:hover {
-      background: #0062CC;
-      transform: scale(1.03);
-    }
-
-    .developer-mode .achievements-button:hover {
-      background: #008F11;
     }
 
     .leave-button {
@@ -774,9 +649,8 @@
     }
 
     .developer-mode .leave-button {
-      background: #003B00;
-      color: #00FF41;
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      background: #00FF00;
+      color: #000000;
     }
 
     .leave-button:hover {
@@ -785,67 +659,7 @@
     }
 
     .developer-mode .leave-button:hover {
-      background: #008F11;
-    }
-
-    .achievements-container {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      z-index: 20;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .developer-mode .achievements-container {
-      background: rgba(0, 0, 0, 0.95);
-    }
-
-    .achievements-container.active {
-      display: flex;
-    }
-
-    .achievement {
-      background: white;
-      border-radius: 10px;
-      padding: 15px;
-      margin: 10px 0;
-      width: 80%;
-      max-width: 400px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-      border: 1px solid rgba(0, 0, 0, 0.04);
-    }
-
-    .developer-mode .achievement {
-      background: #000;
-      border-color: #008F11;
-      box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-    }
-
-    .achievement h3 {
-      margin: 0 0 10px;
-      font-size: 1.4rem;
-      color: var(--systemBlue);
-    }
-
-    .developer-mode .achievement h3 {
-      color: #00FF41;
-    }
-
-    .achievement p {
-      margin: 0;
-      font-size: 1.2rem;
-      color: var(--labelPrimary);
-    }
-
-    .developer-mode .achievement p {
-      color: #00FF41;
+      background: #00CC00;
     }
 
     .touch-controls {
@@ -857,10 +671,6 @@
       justify-content: center;
       gap: 20px;
       z-index: 5;
-    }
-
-    .developer-mode .touch-controls {
-      bottom: 70px;
     }
 
     .touch-button {
@@ -879,8 +689,8 @@
     }
 
     .developer-mode .touch-button {
-      background: rgba(0, 255, 65, 0.3);
-      box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+      background: rgba(0, 255, 0, 0.3);
+      color: #000000;
     }
 
     .touch-button:active {
@@ -895,7 +705,7 @@
       padding: 15px;
       margin-top: 10px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--borderColor);
       width: 100%;
       max-width: 760px;
       opacity: 0;
@@ -904,9 +714,8 @@
     }
 
     .developer-mode .comment-box {
-      background: rgba(0, 13, 8, 0.9);
-      border-color: rgba(0, 255, 65, 0.2);
-      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+      background: rgba(0, 0, 0, 0.9);
+      border-color: var(--borderColor);
     }
 
     .comment-box.active {
@@ -932,6 +741,11 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      border: 2px solid transparent;
+    }
+
+    .developer-mode .comment-character img {
+      border-color: rgba(0, 255, 0, 0.2);
     }
 
     .comment-character.happy {
@@ -940,6 +754,15 @@
 
     .comment-character.nervous {
       animation: characterNervous 0.5s infinite ease-in-out;
+    }
+
+    .comment-character.flustered {
+      animation: characterFlustered 0.8s infinite ease-in-out;
+    }
+
+    .comment-character.serious {
+      animation: none;
+      transform: scale(1);
     }
 
     .comment-content {
@@ -956,7 +779,7 @@
     }
 
     .developer-mode .comment-speaker {
-      color: #00FF41;
+      color: var(--textColor);
     }
 
     .comment-text {
@@ -964,10 +787,6 @@
       color: var(--labelPrimary);
       margin: 0;
       white-space: pre-wrap;
-    }
-
-    .developer-mode .comment-text {
-      color: #00FF41;
     }
 
     .password-container {
@@ -998,9 +817,9 @@
     }
 
     .developer-mode .password-input {
-      background: #000;
-      color: #00FF41;
-      border-color: #008F11;
+      background: #1C2526;
+      border-color: var(--systemGray4);
+      color: var(--textColor);
     }
 
     .password-input:focus {
@@ -1009,12 +828,11 @@
     }
 
     .developer-mode .password-input:focus {
-      border-color: #00FF41;
-      box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.3);
+      box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.1);
     }
 
     .password-button {
-      background: var(--systemBlue);
+      background: var(--buttonBackground);
       color: #FFFFFF;
       border: none;
       padding: 12px 24px;
@@ -1028,18 +846,12 @@
     }
 
     .developer-mode .password-button {
-      background: #003B00;
-      color: #00FF41;
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      color: #000000;
     }
 
     .password-button:hover {
-      background: #0062CC;
+      background: var(--buttonHover);
       transform: scale(1.03);
-    }
-
-    .developer-mode .password-button:hover {
-      background: #008F11;
     }
 
     .error-message {
@@ -1053,46 +865,12 @@
     }
 
     .developer-mode .error-message {
-      color: #FF5555;
+      color: #00FF00;
     }
 
     .error-message.active {
       opacity: 1;
       transform: translateY(0);
-    }
-
-    .ai-controls {
-      display: none;
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      width: 100%;
-      justify-content: center;
-      gap: 10px;
-      z-index: 5;
-      padding: 10px;
-    }
-
-    .developer-mode .ai-controls {
-      display: flex;
-    }
-
-    .ai-control-button {
-      background: rgba(0, 255, 65, 0.3);
-      color: #00FF41;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-    }
-
-    .ai-control-button:hover {
-      background: rgba(0, 255, 65, 0.5);
-      transform: scale(1.03);
     }
 
     @media (min-width: 768px) {
@@ -1164,15 +942,6 @@
         width: 100px;
         height: 140px;
       }
-
-      .ai-controls {
-        gap: 20px;
-      }
-
-      .ai-control-button {
-        padding: 10px 20px;
-        font-size: 1rem;
-      }
     }
 
     @media (min-width: 1024px) {
@@ -1192,7 +961,6 @@
   </style>
 </head>
 <body>
-  <div class="matrix-rain" id="matrixRain"></div>
   <div class="start-screen" id="startScreen">
     <h1>Pong By KVRELIA</h1>
     <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20" aria-label="Player name input">
@@ -1226,19 +994,18 @@
   </div>
 
   <div class="container" id="mainContainer">
-    <button class="achievements-button" id="achievementsButton" onclick="toggleAchievements()" aria-label="Open achievements">Achievements</button>
     <div class="bot-selection" id="botSelection">
       <h2>Select Your Opponent</h2>
       <div class="bot-container" id="botContainer">
-        <div class="bot-card" data-bot="1">
+        <div class="bot-card" data-bot="1" aria-label="Select Your Grandpa">
           <img src="https://i.imgur.com/0mUKe7Y.png" alt="Your Grandpa">
           <p>Your Grandpa</p>
         </div>
-        <div class="bot-card" data-bot="2">
+        <div class="bot-card" data-bot="2" aria-label="Select Normal AI">
           <img src="https://i.imgur.com/vaAusAL.png" alt="Normal AI">
           <p>Normal AI</p>
         </div>
-        <div class="bot-card" data-bot="3">
+        <div class="bot-card" data-bot="3" aria-label="Select Rich CEO">
           <img src="https://i.imgur.com/q7E4DpM.png" alt="Rich CEO">
           <p>Rich CEO</p>
         </div>
@@ -1255,12 +1022,6 @@
         <div class="touch-button" id="upButton">↑</div>
         <div class="touch-button" id="downButton">↓</div>
       </div>
-      <div class="ai-controls" id="aiControls">
-        <button class="ai-control-button" id="aiEasierButton">Easier AI</button>
-        <button class="ai-control-button" id="aiHarderButton">Harder AI</button>
-        <button class="ai-control-button" id="aiPreciseButton">Precise AI</button>
-        <button class="ai-control-button" id="aiRandomButton">Random AI</button>
-      </div>
     </div>
     <div class="comment-box" id="commentBox">
       <div class="comment-character" id="commentCharacter">
@@ -1271,17 +1032,11 @@
         <p class="comment-text" id="commentText"></p>
       </div>
     </div>
-    <div class="achievements-container" id="achievementsContainer">
-      <h2>Achievements</h2>
-      <div id="achievementList"></div>
-      <button class="tutorial-button" onclick="toggleAchievements()">Close</button>
-    </div>
   </div>
 
   <script>
     // Game variables
     let playerName = 'Player';
-    let isCharacterHidden = false;
     let developerMode = false;
     const playerNameInput = document.getElementById('playerNameInput');
     const startButton = document.getElementById('startButton');
@@ -1295,17 +1050,6 @@
     const upButton = document.getElementById('upButton');
     const downButton = document.getElementById('downButton');
     const leaveButton = document.getElementById('leaveButton');
-    const matrixRain = document.getElementById('matrixRain');
-    const aiControls = document.getElementById('aiControls');
-    const aiEasierButton = document.getElementById('aiEasierButton');
-    const aiHarderButton = document.getElementById('aiHarderButton');
-    const aiPreciseButton = document.getElementById('aiPreciseButton');
-    const aiRandomButton = document.getElementById('aiRandomButton');
-
-    // AI difficulty modifiers
-    let aiDifficultyModifier = 1.0;
-    let aiPrecisionModifier = 1.0;
-    let aiRandomnessModifier = 0.0;
 
     // Pong game elements
     const playerPaddle = document.getElementById('playerPaddle');
@@ -1335,55 +1079,44 @@
     const commentSpeaker = document.getElementById('commentSpeaker');
     const commentText = document.getElementById('commentText');
 
-    // Achievements elements
-    const achievementsContainer = document.getElementById('achievementsContainer');
-    const achievementList = document.getElementById('achievementList');
-
-    // Tutorial scripts
-    const normalTutorialScript = [
+    // Regular tutorial script
+    const tutorialScript = [
       { text: "Welcome to the tutorial!", emotion: "happy" },
       { text: "Oh. I mean, Pong is literally the easiest thing in the world, but, just... Yes. Tutorial!", emotion: "annoyed" },
       { text: "Don't you just love having to do tutorials in games you have played before and already know by heart!", emotion: "sarcastic" },
       { text: "hehehe… You do not need this long tutorial you know?", emotion: "happy" },
       { text: "I'm just going to constantly bug you about how you need to listen to this tutorial.", emotion: "sarcastic" },
-      { text: "eh...eh...((cough) (Cough) totally not what I'm doing right now.)", emotion: "nervous" },
+      { text: "eh...eh...((cough) (Cough)) totally not what I'm doing right now.)", emotion: "nervous" },
       { text: "Anyway, KVRELIAKVRI Designed this model in like 4 days using- What? I have to actually do a tutorial? Oh- Right. Anyway,", emotion: "flustered" },
       { text: "Let's get started with the actual tutorial... ((even though you probably don't need it)", emotion: "normal" },
       { text: "Use your mouse or touch controls to move the paddle up and down. The goal is to hit the ball past your opponent.", emotion: "explaining" },
-      { text: "There are different AI opponents with varying difficulty levels. Choose wisely!", emotion: "serious" },
+      { text: "There are different AI opponents with varying difficulty levels.. Choose wisely!", emotion: "serious" },
       { text: "That's it!", emotion: "excited" },
       { text: "Wait, did you actually listen to all of that? I'm impressed!", emotion: "happy" },
       { text: "Or maybe you just skipped through... either way, let's play!", emotion: "sarcastic" }
     ];
 
-    const developerTutorialScript = [
-      { text: "Welcome to Developer Mode!", emotion: "serious" },
-      { text: "You've unlocked the secret developer features. Nice work, coder.", emotion: "serious" },
-      { text: "This mode has a special Matrix-style theme and some behind-the-scenes insights.", emotion: "explaining" },
-      { text: "The game mechanics remain the same, but now you're playing in style.", emotion: "happy" },
-      { text: "The AI opponents have been enhanced with developer-level difficulty controls.", emotion: "serious" },
-      { text: "Use the new AI controls at the bottom to adjust the bot's behavior.", emotion: "explaining" },
-      { text: "Watch out for the Rich CEO - he's been optimized for maximum performance.", emotion: "nervous" },
-      { text: "The matrix rain effect is purely cosmetic, but it makes you look cool, right?", emotion: "sarcastic" },
-      { text: "All UI elements have been recolored to match the hacker aesthetic.", emotion: "explaining" },
-      { text: "Remember - with great power comes great responsibility.", emotion: "serious" },
-      { text: "Now go show those AI opponents what a real developer can do!", emotion: "happy" }
+    // Developer Mode tutorial script
+    const devTutorialScript = [
+      { text: "Access granted, {player}. Welcome to Developer Mode.", emotion: "serious" },
+      { text: "Pong, coded in 4 days by KVRELIA. Let's break down the game loop!", emotion: "happy" },
+      { text: "It runs at ~60fps with setInterval(16ms). Check updateGame() for the core logic.", emotion: "serious" },
+      { text: "Collisioning uses AABB checks. Ball-paddle hits? Just simple math... unless you mess up the vars!", emotion: "flustered" },
+      { text: "AI difficulty scales via botDifficulty (1-3). Higher means tighter tracking.", emotion: "serious" },
+      { text: "Debugging? Oh, sure sure, just console.log(ballX) like it's 1999.", emotion: "sarcastic" },
+      { text: "The comment system is so cool commentating commenting!", emotion: "happy" },
+      { text: "Mod it! Tweak paddleMoveSpeed or ballSpeedX in commenting out.", emotion: "flustered" },
+      { text: "That's the gist. Don't tell me you'll crash it already... right?", emotion: "sarcastic" }
     ];
 
     // Bot descriptions for pre-match
-    const normalBotDescriptions = {
-      1: { text: "This is your Grandpa! He's slow and might miss the ball sometimes, but he's got heart!", emotion: "happy" },
-      2: { text: "A-Are you sure? It's actually harder than you think.", emotion: "nervous" },
-      3: { text: "Meet the Rich CEO! He's fast and confident, but his arrogance might make him slip up!", emotion: "sarcastic" }
+    const botDescriptions = {
+      1: { text: "Your Grandpa. Slow, steady, and full of wisdom.", emotion: "serious" },
+      2: { text: "Normal AI? Oh, um, it's tougher than it looks, I swear!", emotion: "flustered" },
+      3: { text: "Rich CEO! Fast, but maybe a bit too confident?", emotion: "nervous" }
     };
 
-    const developerBotDescriptions = {
-      1: { text: "Grandpa's AI has been optimized. He's still slow, but now with better prediction algorithms.", emotion: "serious" },
-      2: { text: "The 'Normal' AI is anything but normal now. It's been upgraded with machine learning.", emotion: "nervous" },
-      3: { text: "The Rich CEO has invested in performance enhancements. Good luck beating his optimized paddle.", emotion: "sarcastic" }
-    };
-
-    // Move comments
+    // Move comments for moving comments
     const moveComments = {
       hit: {
         default: ["Nice hit! Keep it up!", "Good one!", "Smooth move!"],
@@ -1394,23 +1127,29 @@
       miss: {
         default: ["Oof, missed it! Try again!", "Close one! Next time!", "You'll get it next time!"],
         sana: ["Oh, you almost had it! Try again, you're doing great!", "Don't worry, you'll get it next time!", "So close! You're almost there!"],
-        rsvlt26: ["Missed. Analyze ball speed and adjust paddle.", "Check your positioning; ball was too fast.", "Missed hit. Debug your paddle movement timing."],
-        aiden: ["Missed again? Seriously?", "Wow, that was... not even close.", "Maybe try moving the paddle next time?"]
+        rsvlt26: ["Missed hit. Analyze ball speed and adjust paddle.", "Check your positioning; that ball was too fast."],
+        aiden: ["Missed again? Seriously?", "Missed, again? Wow.", "Maybe try moving that paddle paddle comment?"]
       },
       score: {
         default: ["Wow, nice shot!", "Point for you!", "Great score!"],
-        sana: ["Yay, you scored! You're so good at this!", "Amazing point! Keep shining!", "Wow, that was beautiful!"],
-        rsvlt26: ["Score! Leverage paddle hits for consistent points.", "Nice point. Optimize for repeated trajectories.", "Good score. Analyze AI patterns for more."],
-        aiden: ["You scored? Must be a glitch.", "Oh, a point? Enjoy it while it lasts.", "Scored, huh? Don't get used to it."]
+        sana: ["Yay, you scored! You're so good!", "Amazing point! Keep shining!", "Wow, that was beautiful!"],
+        rsvlt26: ["Score! Leverage paddle hits for consistent points.", "Nice point. Optimize for repeated trajectories.", "Point! Analyze point!"],
+        aiden: ["You scored? Comment!", "Comment!", "Scored comment!"]
+      },
+      consecutiveScore: {
+        default: ["Two in a row! Impressive control.", "Solid streak! Keep it up.", "Nice move! Comment!"],
+        sana: ["Wow, twice in a row!", "Two points!", "Keep going!"],
+        rsvlt26: ["Consecutive streak!", "Double points!", "Streak comment!"],
+        aiden: ["Comment streak!", "Comment!", "Comment!"]
       },
       concede: {
-        default: ["Oh no, hang in there!", "Tough one! Keep trying!", "You'll bounce back!"],
-        sana: ["It's okay, you'll get them next time!", "Don't worry, you're still doing great!", "Aww, you'll come back stronger!"],
-        rsvlt26: ["Conceded. Study AI paddle movement for counters.", "Point lost. Adjust strategy for ball speed.", "AI scored. Refine your defensive positioning."],
-        aiden: ["Let them score again, why don't you?", "Nice job handing them a point.", "What, just giving up now?"]
+        default: ["Oh no!", "Tough one!", "You'll bounce!"],
+        sana: ["Oh no!", "Comment!", "Come back!"],
+        rsvlt26: ["Conceded!", "Point!", "AI scored!", "Comment!"],
+        aiden: ["Comment!", "Comment!", "Comment!"]
       }
     };
-
+    
     let currentTutorialStep = 0;
     let gameActive = false;
     let botDifficulty = 2;
@@ -1425,737 +1164,2017 @@
     let aiScoreValue = 0;
     let isMobile = false;
     let touchY = 0;
-    let paddleMoveSpeed = 0;
-    let characterTouchCount = 0;
-    let normalAIConfirmedOnce = false;
+    let paddleMove = 0;
     let lastCommentTime = 0;
     let lastBallX = 0;
-    let achievements = {
-      touchCharacter: { name: "You actually tried this?", description: "Touched the tutorial character.", unlocked: false },
-      developerMode: { name: "1337 H4X0R", description: "Unlocked Developer Mode.", unlocked: false }
-    };
+    let consecutiveHits = 0;
+    let consecutiveMisses = 0;
+    let consecutiveScores = 0;
+    let consecutiveConcedes = 0;
+    let currentBot = 1;
+    let gamePaused = false;
+    let paddleHeight = 80;
+    let paddleWidth = 12;
+    let ballSize = 15;
+    let gameWidth = 0;
+    let gameHeight = 0;
+    let paddleMoveSpeed = 8;
+    let ballSpeed = 5;
+    let aiReactionTime = 0.2;
+    let aiErrorRate = 0.1;
 
-    const characterImageMap = {
-      serious: 'https://i.imgur.com/r0Cxnaw.png',
-      flustered: 'https://i.imgur.com/cxszVTW.png',
-      sarcastic: 'https://i.imgur.com/DujUpl5.png',
-      nervous: 'https://i.imgur.com/zgiro08.png',
-      default: 'https://i.imgur.com/C60VL7M.png'
-    };
-
-    // Initialize the game
+    // Initialize game
     function initGame() {
-      detectMobile();
       startButton.addEventListener('click', startGame);
-      playerNameInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') startGame();
+      tutorialNextButton.addEventListener('click', nextTutorialStep);
+      passwordButton.addEventListener('click', checkPassword);
+      
+      // Set up bot selection
+      botCards.forEach(card => {
+        card.addEventListener('click', () => selectBot(parseInt(card.dataset.bot)));
       });
-
-      passwordButton.addEventListener('click', verifyPassword);
-      passwordInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') verifyPassword();
-      });
-
-      botCards.forEach((card, index) => {
-        card.querySelector('img').src = [
-          "https://i.imgur.com/0mUKe7Y.png",
-          "https://i.imgur.com/vaAusAL.png",
-          "https://i.imgur.com/q7E4DpM.png"
-        ][index];
-        card.addEventListener('click', () => {
-          botDifficulty = parseInt(card.getAttribute('data-bot'));
-          botSelection.style.display = 'none';
-          showPreMatchDialogue();
-        });
-      });
-
-      gameContainer.addEventListener('mousemove', (e) => {
-        if (!gameActive || isMobile) return;
-        const rect = gameContainer.getBoundingClientRect();
-        playerPaddleY = e.clientY - rect.top;
-        updatePaddlePosition();
-        playerPaddle.classList.add('active');
-        setTimeout(() => playerPaddle.classList.remove('active'), 300);
-      });
-
-      if (isMobile) {
-        gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-        gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-        
-        upButton.addEventListener('touchstart', () => {
-          paddleMoveSpeed = -15;
-          playerPaddle.classList.add('active');
-        });
-        
-        upButton.addEventListener('touchend', () => {
-          paddleMoveSpeed = 0;
-          playerPaddle.classList.remove('active');
-        });
-        
-        downButton.addEventListener('touchstart', () => {
-          paddleMoveSpeed = 15;
-          playerPaddle.classList.add('active');
-        });
-        
-        downButton.addEventListener('touchend', () => {
-          paddleMoveSpeed = 0;
-          playerPaddle.classList.remove('active');
-        });
-      }
-
+      
+      // Set up leave button
       leaveButton.addEventListener('click', leaveGame);
-
-      tutorialCharacter.addEventListener('click', handleCharacterTouch);
-      tutorialCharacter.addEventListener('touchstart', handleCharacterTouch, { passive: true });
-
-      // AI control buttons
-      aiEasierButton.addEventListener('click', () => {
-        aiDifficultyModifier = Math.max(0.5, aiDifficultyModifier - 0.1);
-        showComment("AI difficulty decreased", "happy");
-      });
-
-      aiHarderButton.addEventListener('click', () => {
-        aiDifficultyModifier = Math.min(2.0, aiDifficultyModifier + 0.1);
-        showComment("AI difficulty increased", "nervous");
-      });
-
-      aiPreciseButton.addEventListener('click', () => {
-        aiPrecisionModifier = aiPrecisionModifier === 1.0 ? 2.0 : 1.0;
-        showComment(`AI precision ${aiPrecisionModifier === 2.0 ? "increased" : "normal"}`, "serious");
-      });
-
-      aiRandomButton.addEventListener('click', () => {
-        aiRandomnessModifier = aiRandomnessModifier === 0.0 ? 0.5 : 0.0;
-        showComment(`AI randomness ${aiRandomnessModifier === 0.5 ? "enabled" : "disabled"}`, "sarcastic");
-      });
-
-      updateCharacterHideOffset();
-      window.addEventListener('resize', updateCharacterHideOffset);
-    }
-
-    function createMatrixRain() {
-      const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
-      const columns = Math.floor(window.innerWidth / 20);
       
-      for (let i = 0; i < columns; i++) {
-        const column = document.createElement('div');
-        column.className = 'matrix-column';
-        column.style.left = `${i * 20}px`;
-        column.style.animationDuration = `${Math.random() * 2000 + 3000}ms`;
-        column.style.animationDelay = `${Math.random() * 2000}ms`;
-        
-        // Fill column with random characters
-        let content = '';
-        const length = Math.floor(Math.random() * 10) + 10;
-        for (let j = 0; j < length; j++) {
-          content += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        
-        column.textContent = content;
-        matrixRain.appendChild(column);
-      }
-    }
-
-    function updateCharacterHideOffset() {
-      const canvasHeight = window.innerHeight;
-      const characterHeight = tutorialCharacter.offsetHeight;
-      const hideOffset = canvasHeight - characterHeight + 50;
-      tutorialCharacter.style.setProperty('--hide-offset', `${hideOffset}px`);
-    }
-
-    function detectMobile() {
+      // Set up touch controls for mobile
+      upButton.addEventListener('touchstart', () => paddleMove = -1);
+      upButton.addEventListener('touchend', () => paddleMove = 0);
+      downButton.addEventListener('touchstart', () => paddleMove = 1);
+      downButton.addEventListener('touchend', () => paddleMove = 0);
+      
+      // Set up keyboard controls
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keyup', handleKeyUp);
+      
+      // Set up mouse controls
+      gameContainer.addEventListener('mousemove', handleMouseMove);
+      
+      // Check if mobile
       isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-
-    function handleTouchStart(e) {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const rect = gameContainer.getBoundingClientRect();
-      touchY = touch.clientY - rect.top;
-    }
-
-    function handleTouchMove(e) {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const rect = gameContainer.getBoundingClientRect();
-      touchY = touch.clientY - rect.top;
-      playerPaddle.classList.add('active');
-      setTimeout(() => playerPaddle.classList.remove('active'), 300);
-    }
-
-    function handleCharacterTouch() {
-      if (characterTouchCount >= 3) return;
-
-      characterTouchCount++;
-      if (characterTouchCount === 1) {
-        tutorialCharacter.className = 'tutorial-character annoyed';
-        tutorialText.style.animation = 'none';
-        void tutorialText.offsetWidth;
-        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-        tutorialText.textContent = "Hey! Stop poking me!";
-      } else if (characterTouchCount === 2) {
-        tutorialCharacter.className = 'tutorial-character flustered';
-        tutorialText.style.animation = 'none';
-        void tutorialText.offsetWidth;
-        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-        tutorialText.textContent = "Seriously, cut it out!";
-      } else {
-        tutorialCharacter.className = 'tutorial-character flustered';
-        tutorialText.style.animation = 'none';
-        void tutorialText.offsetWidth;
-        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-        tutorialText.textContent = "Oh come on. Are you just doing this because it is an achievement? Shame.";
-        if (!achievements.touchCharacter.unlocked) {
-          achievements.touchCharacter.unlocked = true;
-          updateAchievements();
-        }
-        setTimeout(() => {
-          tutorialCharacter.className = 'tutorial-character hidden';
-          isCharacterHidden = true;
-          updateTutorialStep();
-        }, 1500);
-      }
-
-      if (characterTouchCount < 3) {
-        setTimeout(() => updateTutorialStep(), 3000);
-      }
-    }
-
-    function leaveGame() {
-      gameActive = false;
-      clearInterval(gameInterval);
-      gameContainer.style.display = 'none';
-      touchControls.style.display = 'none';
-      commentBox.classList.remove('active');
-      botSelection.style.display = 'block';
-    }
-
-    function showPreMatchDialogue() {
-      tutorialContainer.classList.add('active');
-      tutorialDialogue.classList.add('active');
-      normalAIConfirmedOnce = false;
-      updatePreMatchDialogue();
-    }
-
-    function updatePreMatchDialogue() {
-      const botDescriptions = developerMode ? developerBotDescriptions : normalBotDescriptions;
-      const desc = botDescriptions[botDifficulty];
-      tutorialText.style.animation = 'none';
-      void tutorialText.offsetWidth;
-      tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-      tutorialCharacter.className = `tutorial-character ${desc.emotion}`;
-      setCharacterImage(desc.emotion);
-      tutorialText.textContent = desc.text;
-
-      tutorialControls.innerHTML = '';
-      if (botDifficulty === 2) {
-        const yesButton = document.createElement('button');
-        yesButton.className = 'tutorial-button';
-        yesButton.textContent = 'Yes';
-        const noButton = document.createElement('button');
-        noButton.className = 'tutorial-button';
-        noButton.textContent = 'No';
-        tutorialControls.appendChild(yesButton);
-        tutorialControls.appendChild(noButton);
-
-        yesButton.addEventListener('click', handleNormalAIYes);
-        noButton.addEventListener('click', handleNormalAINo);
-      } else {
-        const continueButton = document.createElement('button');
-        continueButton.className = 'tutorial-button';
-        continueButton.textContent = 'Continue';
-        tutorialControls.appendChild(continueButton);
-        continueButton.addEventListener('click', () => {
-          tutorialContainer.classList.remove('active');
-          gameContainer.style.display = 'block';
-          if (isMobile) {
-            touchControls.style.display = 'flex';
-          }
-          startPongGame();
-        });
-      }
-    }
-
-    function handleNormalAIYes() {
-      if (!normalAIConfirmedOnce) {
-        normalAIConfirmedOnce = true;
-        tutorialText.style.animation = 'none';
-        void tutorialText.offsetWidth;
-        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-        tutorialText.textContent = "Are you REAALLY sure?";
-        tutorialCharacter.className = 'tutorial-character nervous';
-        setCharacterImage('nervous');
-        tutorialControls.innerHTML = '';
-        const yesButton = document.createElement('button');
-        yesButton.className = 'tutorial-button';
-        yesButton.textContent = 'Yes';
-        const noButton = document.createElement('button');
-        noButton.className = 'tutorial-button';
-        noButton.textContent = 'No';
-        tutorialControls.appendChild(yesButton);
-        tutorialControls.appendChild(noButton);
-
-        yesButton.addEventListener('click', () => {
-          tutorialContainer.classList.remove('active');
-          gameContainer.style.display = 'block';
-          if (isMobile) {
-            touchControls.style.display = 'flex';
-          }
-          startPongGame();
-        });
-        noButton.addEventListener('click', handleNormalAISecondNo);
-      }
-    }
-
-    function handleNormalAINo() {
-      tutorialContainer.classList.remove('active');
-      botSelection.style.display = 'block';
-    }
-
-    function handleNormalAISecondNo() {
-      tutorialText.style.animation = 'none';
-      void tutorialText.offsetWidth;
-      tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-      tutorialText.textContent = "Huh? No? You said yes earlier, so no leaving now.";
-      tutorialCharacter.className = 'tutorial-character sarcastic';
-      setCharacterImage('sarcastic');
-      tutorialControls.innerHTML = '';
-      const yesButton = document.createElement('button');
-      yesButton.className = 'tutorial-button';
-      yesButton.textContent = 'Yes';
-      tutorialControls.appendChild(yesButton);
-      yesButton.addEventListener('click', () => {
-        tutorialContainer.classList.remove('active');
-        gameContainer.style.display = 'block';
-        if (isMobile) {
-          touchControls.style.display = 'flex';
-        }
-        startPongGame();
-      });
-    }
-
-    function showComment(text, emotion) {
-      const now = Date.now();
-      if (now - lastCommentTime < 2000) return;
-      lastCommentTime = now;
-
-      commentText.textContent = text;
-      setCharacterImage(emotion, true);
-      commentCharacter.className = `comment-character ${emotion}`;
-      commentBox.classList.add('active');
-      setTimeout(() => {
-        if (!gameActive || commentBox.classList.contains('game-result')) {
-          commentBox.classList.remove('active');
-        }
-      }, 1500);
-    }
-
-    function showGameResult(message, emotion) {
-      commentBox.classList.add('game-result');
-      showComment(message, emotion);
-      setTimeout(() => {
-        leaveGame();
-        commentBox.classList.remove('game-result');
-      }, 3000);
-    }
-
-    function getMoveComment(type) {
-      const lowerName = playerName.toLowerCase();
-      let comments;
-      if (lowerName === 'sana') {
-        comments = moveComments[type].sana;
-      } else if (lowerName === 'rsvlt26') {
-        comments = moveComments[type].rsvlt26;
-      } else if (lowerName === 'aiden') {
-        comments = moveComments[type].aiden;
-      } else {
-        comments = moveComments[type].default;
-      }
-      return comments[Math.floor(Math.random() * comments.length)];
-    }
-
-    function startPongGame() {
-      gameActive = true;
-      const containerWidth = gameContainer.offsetWidth;
-      const containerHeight = gameContainer.offsetHeight;
-      
-      ballX = containerWidth / 2;
-      ballY = containerHeight / 2;
-      ballSpeedX = 5 * (Math.random() > 0.5 ? 1 : -1);
-      ballSpeedY = 5 * (Math.random() * 2 - 1);
-      playerPaddleY = containerHeight / 2;
-      aiPaddleY = containerHeight / 2;
-      playerScoreValue = 0;
-      aiScoreValue = 0;
-      playerScore.textContent = '0';
-      aiScore.textContent = '0';
-      lastBallX = ballX;
-
-      updatePaddlePosition();
-      updateBallPosition();
-      
-      commentBox.classList.add('active');
-      
-      clearInterval(gameInterval);
-      gameInterval = setInterval(updateGame, 16);
-    }
-
-    function updateGame() {
-      if (!gameActive) return;
-
-      const containerWidth = gameContainer.offsetWidth;
-      const containerHeight = gameContainer.offsetHeight;
-
       if (isMobile) {
-        if (paddleMoveSpeed !== 0) {
-          playerPaddleY += paddleMoveSpeed;
-        } else {
-          playerPaddleY = touchY;
-        }
-        updatePaddlePosition();
+        touchControls.style.display = 'flex';
       }
-
-      const prevBallX = ballX;
-      ballX += ballSpeedX;
-      ballY += ballSpeedY;
-      updateBallPosition();
-
-      // AI movement with modifiers
-      let aiTargetY = ballY;
-      let aiReactionSpeed = 0.05;
-      let aiRandomFactor = 0;
       
-      switch(botDifficulty) {
-        case 1:
-          aiReactionSpeed = 0.05 * aiDifficultyModifier;
-          aiRandomFactor = 0.3 * aiRandomnessModifier;
-          if (Math.random() > aiRandomFactor) {
-            aiTargetY += (Math.random() * 100 - 50) * aiRandomnessModifier;
-            aiPaddleY += (aiTargetY - aiPaddleY) * aiReactionSpeed * aiPrecisionModifier;
-          }
-          break;
-        case 2:
-          aiReactionSpeed = 1.0 * aiDifficultyModifier;
-          aiRandomFactor = 0.1 * aiRandomnessModifier;
-          aiTargetY = ballY - (isMobile ? 40 : 50) + (Math.random() * 40 - 20) * aiRandomFactor;
-          aiPaddleY += (aiTargetY - aiPaddleY) * aiReactionSpeed * aiPrecisionModifier;
-          break;
-        case 3:
-          aiReactionSpeed = 0.25 * aiDifficultyModifier;
-          aiRandomFactor = 0.1 * aiRandomnessModifier;
-          if (Math.random() > aiRandomFactor) {
-            aiTargetY += (Math.random() * 20 - 10) * aiRandomnessModifier;
-            aiPaddleY += (aiTargetY - aiPaddleY) * aiReactionSpeed * aiPrecisionModifier;
-          }
-          break;
-      }
-
-      if (aiPaddleY < 0) aiPaddleY = 0;
-      if (aiPaddleY > containerHeight - (isMobile ? 80 : 100)) {
-        aiPaddleY = containerHeight - (isMobile ? 80 : 100);
-      }
-      aiPaddle.style.top = aiPaddleY + 'px';
-
-      if (ballY <= 0 || ballY >= containerHeight - (isMobile ? 15 : 20)) {
-        ballSpeedY = -ballSpeedY;
-      }
-
-      const paddleWidth = isMobile ? 12 : 15;
-      const paddleHeight = isMobile ? 80 : 100;
-      const ballSize = isMobile ? 15 : 20;
-
-      let playerHit = false;
-      if (ballX <= 15 + paddleWidth &&
-          ballX >= 15 &&
-          ballY >= playerPaddleY - ballSize &&
-          ballY <= playerPaddleY + paddleHeight) {
-        playerHit = true;
-        ballSpeedX = Math.abs(ballSpeedX) * (developerMode ? 1.15 : 1.1);
-        const hitPosition = (ballY - playerPaddleY) / paddleHeight;
-        ballSpeedY = 8 * (hitPosition - 0.5);
-        ballX = 15 + paddleWidth;
-        showComment(getMoveComment('hit'), 'happy');
-      }
-
-      if (ballX >= containerWidth - 15 - paddleWidth - ballSize &&
-          ballX <= containerWidth - 15 &&
-          ballY >= aiPaddleY - ballSize &&
-          ballY <= aiPaddleY + paddleHeight) {
-        ballSpeedX = -Math.abs(ballSpeedX) * (developerMode ? 1.15 : 1.1);
-        const hitPosition = (ballY - aiPaddleY) / paddleHeight;
-        ballSpeedY = 8 * (hitPosition - 0.5);
-        ballX = containerWidth - 15 - paddleWidth - ballSize;
-      }
-
-      // Detect miss
-      if (prevBallX > 15 + paddleWidth && ballX <= 15 + paddleWidth &&
-          (ballY < playerPaddleY || ballY > playerPaddleY + paddleHeight)) {
-        showComment(getMoveComment('miss'), 'nervous');
-      }
-
-      // Scoring
-      if (ballX < 0) {
-        aiScoreValue++;
-        aiScore.textContent = aiScoreValue;
-        aiScore.classList.add('bounce');
-        setTimeout(() => aiScore.classList.remove('bounce'), 200);
-        showComment(getMoveComment('concede'), 'nervous');
-        resetBall();
-        checkGameEnd();
-      } else if (ballX > containerWidth) {
-        playerScoreValue++;
-        playerScore.textContent = playerScoreValue;
-        playerScore.classList.add('bounce');
-        setTimeout(() => playerScore.classList.remove('bounce'), 200);
-        showComment(getMoveComment('score'), 'happy');
-        resetBall();
-        checkGameEnd();
-      }
-    }
-
-    function checkGameEnd() {
-      const maxScore = 5;
-      if (playerScoreValue >= maxScore) {
-        gameActive = false;
-        clearInterval(gameInterval);
-        showGameResult('Congratulations, you won!', 'happy');
-      } else if (aiScoreValue >= maxScore) {
-        gameActive = false;
-        clearInterval(gameInterval);
-        showGameResult('Oh no, the AI won!', 'nervous');
-      }
-    }
-
-    function updatePaddlePosition() {
-      const containerHeight = gameContainer.offsetHeight;
-      const paddleHeight = isMobile ? 80 : 100;
-      
-      if (playerPaddleY < 0) {
-        playerPaddleY = 0;
-      } else if (playerPaddleY > containerHeight - paddleHeight) {
-        playerPaddleY = containerHeight - paddleHeight;
-      }
-      playerPaddle.style.top = playerPaddleY + 'px';
-    }
-
-    function updateBallPosition() {
-      ball.style.left = ballX + 'px';
-      ball.style.top = ballY + 'px';
-    }
-
-    function resetBall() {
-      const containerWidth = gameContainer.offsetWidth;
-      const containerHeight = gameContainer.offsetHeight;
-      
-      ballX = containerWidth / 2;
-      ballY = containerHeight / 2;
-      ballSpeedX = 5 * (Math.random() > 0.5 ? 1 : -1);
-      ballSpeedY = 5 * (Math.random() * 2 - 1);
-      updateBallPosition();
-
-      gameActive = false;
-      setTimeout(() => {
-        if (playerScoreValue < 5 && aiScoreValue < 5) {
-          gameActive = true;
-        }
-      }, 1500);
-    }
-
-    function sanitizeInput(input) {
-      return input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function setCharacterImage(emotion, isComment = false) {
-      const imageElement = isComment ? commentCharacterImage : tutorialCharacterImage;
-      if (developerMode) {
-        // In developer mode, always use the serious image (r0Cxnaw)
-        imageElement.src = 'https://i.imgur.com/r0Cxnaw.png';
-      } else {
-        // In normal mode, use the default image
-        imageElement.src = 'https://i.imgur.com/C60VL7M.png';
-      }
-    }
-
-    function updateCharacterName() {
-      const name = developerMode ? 'Hana Ponko' : 'Hina Pon';
-      tutorialSpeaker.textContent = name;
-      commentSpeaker.textContent = name;
-      tutorialCharacterImage.alt = name;
-      commentCharacterImage.alt = name;
+      // Initialize tutorial
+      showTutorialStep(0);
     }
 
     function startGame() {
-      playerName = sanitizeInput(playerNameInput.value.trim()) || 'Player';
-      const lowerName = playerName.toLowerCase();
-
-      if (lowerName === 'rsvlt26') {
-        startScreen.classList.add('slide-out');
-        setTimeout(() => {
-          startScreen.style.display = 'none';
-          showPasswordPrompt();
-        }, 500);
-      } else {
-        startTutorial();
-      }
-    }
-
-    function showPasswordPrompt() {
-      tutorialContainer.classList.add('active');
-      setTimeout(() => {
-        tutorialDialogue.classList.add('active');
-        tutorialText.style.animation = 'none';
-        void tutorialText.offsetWidth;
-        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-        tutorialText.textContent = "Accessing Developer Mode requires a key. Think like a <div>-ine coder—don't console.log() your secrets! Your password should be as secure as !important in CSS, as dynamic as a Promise.resolve(), and as precise as a === strict check. No NaN business—only pure, unminified genius allowed. Enter the <!-- answer --> below:";
-        tutorialCharacter.className = 'tutorial-character serious';
-        setCharacterImage('serious');
-        tutorialControls.style.display = 'none';
-        passwordContainer.classList.add('active');
-      }, 300);
-    }
-
-    function verifyPassword() {
-      const password = passwordInput.value.trim();
-      if (password === 'BYKVRELIA') {
-        developerMode = true;
-        document.body.classList.add('developer-mode');
-        createMatrixRain();
-        updateCharacterName();
-        passwordContainer.classList.remove('active');
-        errorMessage.classList.remove('active');
-        tutorialControls.style.display = 'flex';
-        if (!achievements.developerMode.unlocked) {
-          achievements.developerMode.unlocked = true;
-          updateAchievements();
-        }
-        startTutorial();
-      } else {
-        tutorialText.style.animation = 'none';
-        void tutorialText.offsetWidth;
-        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-        tutorialText.textContent = "Wrong key, coder! Try again—no stack overflow allowed!";
-        tutorialCharacter.className = 'tutorial-character nervous';
-        setCharacterImage('nervous');
-        errorMessage.classList.add('active');
-        passwordInput.value = '';
-        setTimeout(() => {
-          errorMessage.classList.remove('active');
-          showPasswordPrompt();
-        }, 2000);
-      }
-    }
-
-    function startTutorial() {
-      playerName = sanitizeInput(playerNameInput.value.trim()) || 'Player';
-      
-      const lowerName = playerName.toLowerCase();
-      const tutorialScript = developerMode ? developerTutorialScript : normalTutorialScript;
-      
-      if (lowerName === 'sana' || lowerName === 'sawna') {
-        tutorialScript[0].text = "O-oh! H-hi Sana! Welcome to the tutorial!";
-        tutorialScript[0].emotion = "nervous";
-      } else if (lowerName === 'aiden') {
-        tutorialScript[0].text = "A-Aiden?! *ahem* I mean... Welcome to the tutorial!";
-        tutorialScript[0].emotion = "flustered";
-      } else if (lowerName === 'rsvlt26') {
-        tutorialScript[0].text = "Oh! Developer Mode activated! Welcome to the tutorial!";
-        tutorialScript[0].emotion = "serious";
-      }
-      
+      playerName = playerNameInput.value.trim() || 'Player';
       startScreen.classList.add('slide-out');
       setTimeout(() => {
         startScreen.style.display = 'none';
-        showTutorial();
+        tutorialContainer.classList.add('active');
       }, 500);
     }
 
-    function showTutorial() {
-      updateCharacterName();
-      tutorialContainer.classList.add('active');
-      setTimeout(() => {
-        tutorialDialogue.classList.add('active');
-        updateTutorialStep();
-      }, 300);
-    }
-
-    function updateTutorialStep() {
-      const tutorialScript = developerMode ? developerTutorialScript : normalTutorialScript;
+    function showTutorialStep(step) {
+      const script = developerMode ? devTutorialScript : tutorialScript;
       
-      if (currentTutorialStep >= tutorialScript.length) {
+      if (step >= script.length) {
         endTutorial();
         return;
       }
-
-      const step = tutorialScript[currentTutorialStep];
       
+      const currentStep = script[step];
+      tutorialText.textContent = currentStep.text.replace('{player}', playerName);
+      
+      // Set character emotion
+      tutorialCharacter.className = 'tutorial-character';
+      tutorialCharacter.classList.add(currentStep.emotion);
+      
+      // Reset typing animation
       tutorialText.style.animation = 'none';
-      if (isCharacterHidden) {
-        tutorialCharacter.className = 'tutorial-character hidden';
-        if (step.emotion !== 'normal' && step.emotion !== 'explaining' && step.emotion !== 'serious') {
-          tutorialCharacter.classList.add(step.emotion);
-        }
+      setTimeout(() => {
+        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
+      }, 10);
+      
+      // Show password input on last step if in dev mode
+      if (developerMode && step === devTutorialScript.length - 1) {
+        passwordContainer.style.display = 'flex';
       } else {
-        tutorialCharacter.className = `tutorial-character`;
-        if (step.emotion !== 'normal' && step.emotion !== 'explaining' && step.emotion !== 'serious') {
-          tutorialCharacter.classList.add(step.emotion);
-        }
-      }
-      setCharacterImage(step.emotion);
-      void tutorialText.offsetWidth;
-      
-      tutorialText.style.animation = 'textTyping 3s steps(40, end)';
-      
-      let displayText = step.text;
-      if (displayText.includes('{player}')) {
-        displayText = displayText.replace('{player}', playerName);
+        passwordContainer.style.display = 'none';
       }
       
-      const lineHeight = 1.5;
-      const fontSize = parseFloat(getComputedStyle(tutorialText).fontSize);
-      const lines = Math.ceil(displayText.length / 30);
-      const minHeight = lines * lineHeight * fontSize;
-      
-      tutorialDialogue.style.minHeight = `${minHeight + 80}px`;
-      
-      tutorialText.textContent = displayText;
+      tutorialDialogue.classList.add('active');
+    }
+
+    function nextTutorialStep() {
+      currentTutorialStep++;
+      showTutorialStep(currentTutorialStep);
+    }
+
+    function checkPassword() {
+      const password = passwordInput.value.trim();
+      if (password === "KVRELIA") {
+        developerMode = true;
+        document.body.classList.add('developer-mode');
+        errorMessage.classList.remove('active');
+        endTutorial();
+      } else {
+        errorMessage.classList.add('active');
+      }
     }
 
     function endTutorial() {
       tutorialContainer.classList.remove('active');
+      mainContainer.style.display = 'flex';
       setTimeout(() => {
-        mainContainer.style.display = 'flex';
         mainContainer.classList.add('slide-in');
-      }, 300);
+      }, 50);
+      
+      // Initialize game container dimensions
+      gameWidth = gameContainer.offsetWidth;
+      gameHeight = gameContainer.offsetHeight;
+      
+      // Position paddles
+      playerPaddle.style.top = (gameHeight / 2 - paddleHeight / 2) + 'px';
+      aiPaddle.style.top = (gameHeight / 2 - paddleHeight / 2) + 'px';
     }
 
-    function toggleAchievements() {
-      if (achievementsContainer.classList.contains('active')) {
-        achievementsContainer.classList.remove('active');
+    function selectBot(botLevel) {
+      botDifficulty = botLevel;
+      currentBot = botLevel;
+      
+      // Adjust AI difficulty based on bot level
+      switch(botLevel) {
+        case 1: // Grandpa - slow and makes mistakes
+          aiReactionTime = 0.4;
+          aiErrorRate = 0.3;
+          break;
+        case 2: // Normal AI - balanced
+          aiReactionTime = 0.2;
+          aiErrorRate = 0.1;
+          break;
+        case 3: // Rich CEO - fast but predictable
+          aiReactionTime = 0.1;
+          aiErrorRate = 0.05;
+          break;
+      }
+      
+      // Show bot description
+      const description = botDescriptions[botLevel];
+      showComment(description.text, description.emotion);
+      
+      // Start game after short delay
+      setTimeout(() => {
+        botSelection.style.display = 'none';
+        gameContainer.style.display = 'block';
+        startRound();
+      }, 2000);
+    }
+
+    function startRound() {
+      gameActive = true;
+      ballX = gameWidth / 2;
+      ballY = gameHeight / 2;
+      
+      // Random initial direction
+      ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * ballSpeed;
+      ballSpeedY = (Math.random() * 2 - 1) * ballSpeed;
+      
+      // Reset consecutive counters
+      consecutiveHits = 0;
+      consecutiveMisses = 0;
+      consecutiveScores = 0;
+      consecutiveConcedes = 0;
+      
+      // Start game loop
+      if (gameInterval) clearInterval(gameInterval);
+      gameInterval = setInterval(updateGame, 16);
+    }
+
+    function updateGame() {
+      if (gamePaused) return;
+      
+      // Move player paddle
+      playerPaddleY += paddleMove * paddleMoveSpeed;
+      playerPaddleY = Math.max(0, Math.min(gameHeight - paddleHeight, playerPaddleY));
+      playerPaddle.style.top = playerPaddleY + 'px';
+      
+      // Move AI paddle with some delay and error
+      const targetY = ballY - paddleHeight / 2;
+      const currentY = parseFloat(aiPaddle.style.top || '0');
+      
+      // Add some error based on difficulty
+      const error = (Math.random() * 2 - 1) * aiErrorRate * gameHeight;
+      
+      // Move towards ball with reaction time delay
+      aiPaddleY = currentY + (targetY + error - currentY) * aiReactionTime;
+      aiPaddleY = Math.max(0, Math.min(gameHeight - paddleHeight, aiPaddleY));
+      aiPaddle.style.top = aiPaddleY + 'px';
+      
+      // Move ball
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+      
+      // Ball collision with top and bottom
+      if (ballY <= 0 || ballY >= gameHeight - ballSize) {
+        ballSpeedY = -ballSpeedY;
+        ballY = Math.max(0, Math.min(gameHeight - ballSize, ballY));
+      }
+      
+      // Ball collision with paddles
+      if (ballX <= paddleWidth + 15 && ballX >= 15 && 
+          ballY + ballSize >= playerPaddleY && ballY <= playerPaddleY + paddleHeight) {
+        // Hit player paddle
+        ballX = paddleWidth + 15;
+        ballSpeedX = -ballSpeedX * 1.05; // Slightly increase speed
+        
+        // Add some angle based on where ball hits paddle
+        const hitPosition = (ballY - playerPaddleY) / paddleHeight;
+        ballSpeedY = (hitPosition - 0.5) * 10;
+        
+        consecutiveHits++;
+        consecutiveMisses = 0;
+        
+        // Show hit comment occasionally
+        if (Math.random() < 0.3 && Date.now() - lastCommentTime > 3000) {
+          showRandomComment('hit');
+          lastCommentTime = Date.now();
+        }
+        
+        // Add paddle hit animation
+        playerPaddle.classList.add('active');
+        setTimeout(() => playerPaddle.classList.remove('active'), 300);
+      } 
+      else if (ballX >= gameWidth - paddleWidth - 15 - ballSize && 
+               ballX <= gameWidth - 15 - ballSize && 
+               ballY + ballSize >= aiPaddleY && ballY <= aiPaddleY + paddleHeight) {
+        // Hit AI paddle
+        ballX = gameWidth - paddleWidth - 15 - ballSize;
+        ballSpeedX = -ballSpeedX * 1.05; // Slightly increase speed
+        
+        // Add some angle based on where ball hits paddle
+        const hitPosition = (ballY - aiPaddleY) / paddleHeight;
+        ballSpeedY = (hitPosition - 0.5) * 10;
+        
+        // AI might miss sometimes based on difficulty
+        if (Math.random() < aiErrorRate * 0.5) {
+          aiPaddle.classList.add('ai-miss');
+          setTimeout(() => aiPaddle.classList.remove('ai-miss'), 500);
+        }
+      }
+      
+      // Score points
+      if (ballX < 0) {
+        // AI scores
+        aiScoreValue++;
+        aiScore.textContent = aiScoreValue;
+        aiScore.classList.add('bounce');
+        setTimeout(() => aiScore.classList.remove('bounce'), 200);
+        
+        consecutiveConcedes++;
+        consecutiveScores = 0;
+        
+        // Show concede comment occasionally
+        if (Math.random() < 0.5 && Date.now() - lastCommentTime > 3000) {
+          showRandomComment('concede');
+          lastCommentTime = Date.now();
+        }
+        
+        resetBall();
+      } 
+      else if (ballX > gameWidth) {
+        // Player scores
+        playerScoreValue++;
+        playerScore.textContent = playerScoreValue;
+        playerScore.classList.add('bounce');
+        setTimeout(() => playerScore.classList.remove('bounce'), 200);
+        
+        consecutiveScores++;
+        consecutiveConcedes = 0;
+        
+        // Show score comment occasionally
+        if (Math.random() < 0.5 && Date.now() - lastCommentTime > 3000) {
+          showRandomComment('score');
+          lastCommentTime = Date.now();
+        }
+        
+        resetBall();
+      }
+      
+      // Update ball position
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+      
+      // Track ball direction for comments
+      lastBallX = ballX;
+    }
+
+    function resetBall() {
+      gamePaused = true;
+      
+      // Reset ball position
+      ballX = gameWidth / 2;
+      ballY = gameHeight / 2;
+      ballSpeedX = (ballSpeedX > 0 ? -1 : 1) * ballSpeed;
+      ballSpeedY = (Math.random() * 2 - 1) * ballSpeed;
+      
+      // Update ball position
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+      
+      // Short pause before next round
+      setTimeout(() => {
+        gamePaused = false;
+      }, 1000);
+    }
+
+    function showRandomComment(type) {
+      let comments;
+      let emotion = "normal";
+      
+      // Get appropriate comments based on situation
+      if (type === 'hit') {
+        if (consecutiveHits > 3) {
+          comments = moveComments.consecutiveScore[playerName.toLowerCase()] || 
+                    moveComments.consecutiveScore.default;
+          emotion = "excited";
+        } else {
+          comments = moveComments.hit[playerName.toLowerCase()] || 
+                    moveComments.hit.default;
+          emotion = "happy";
+        }
+      } 
+      else if (type === 'miss') {
+        comments = moveComments.miss[playerName.toLowerCase()] || 
+                  moveComments.miss.default;
+        emotion = "nervous";
+      } 
+      else if (type === 'score') {
+        if (consecutiveScores > 1) {
+          comments = moveComments.consecutiveScore[playerName.toLowerCase()] || 
+                    moveComments.consecutiveScore.default;
+          emotion = "excited";
+        } else {
+          comments = moveComments.score[playerName.toLowerCase()] || 
+                    moveComments.score.default;
+          emotion = "happy";
+        }
+      } 
+      else if (type === 'concede') {
+        if (consecutiveConcedes > 1) {
+          comments = moveComments.concede[playerName.toLowerCase()] || 
+                    moveComments.concede.default;
+          emotion = "flustered";
+        } else {
+          comments = moveComments.concede[playerName.toLowerCase()] || 
+                    moveComments.concede.default;
+          emotion = "nervous";
+        }
+      }
+      
+      // Select random comment
+      const comment = comments[Math.floor(Math.random() * comments.length)];
+      showComment(comment, emotion);
+    }
+
+    function showComment(text, emotion) {
+      commentText.textContent = text;
+      commentCharacter.className = 'comment-character';
+      commentCharacter.classList.add(emotion);
+      commentBox.classList.add('active');
+      
+      // Hide comment after a delay
+      setTimeout(() => {
+        commentBox.classList.remove('active');
+      }, 3000);
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'ArrowUp' || e.key === 'w') {
+        paddleMove = -1;
+      } else if (e.key === 'ArrowDown' || e.key === 's') {
+        paddleMove = 1;
+      }
+    }
+
+    function handleKeyUp(e) {
+      if ((e.key === 'ArrowUp' || e.key === 'w') && paddleMove === -1) {
+        paddleMove = 0;
+      } else if ((e.key === 'ArrowDown' || e.key === 's') && paddleMove === 1) {
+        paddleMove = 0;
+      }
+    }
+
+    function handleMouseMove(e) {
+      if (!isMobile) {
+        const rect = gameContainer.getBoundingClientRect();
+        const mouseY = e.clientY - rect.top;
+        playerPaddleY = mouseY - paddleHeight / 2;
+        playerPaddleY = Math.max(0, Math.min(gameHeight - paddleHeight, playerPaddleY));
+        playerPaddle.style.top = playerPaddleY + 'px';
+      }
+    }
+
+    function leaveGame() {
+      clearInterval(gameInterval);
+      gameActive = false;
+      
+      // Show bot selection again
+      gameContainer.style.display = 'none';
+      botSelection.style.display = 'block';
+      
+      // Reset scores
+      playerScoreValue = 0;
+      aiScoreValue = 0;
+      playerScore.textContent = '0';
+      aiScore.textContent = '0';
+    }
+
+    // Start the game
+    initGame();
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pong By KVRELIA</title>
+  <link rel="preload" href="https://i.imgur.com/C60VL7M.png" as="image">
+  <style>
+    :root {
+      --systemBlue: #007AFF;
+      --systemGray6: #F2F2F7;
+      --systemGray5: #E5E5EA;
+      --systemGray4: #D1D1D6;
+      --systemGray3: #C7C7CC;
+      --systemGray2: #AEAEB2;
+      --systemGray: #8E8E93;
+      --labelPrimary: #000000;
+      --systemBackground: #ffffff;
+      --paddleGlow: 0 0 8px rgba(255, 255, 255, 0.5);
+      --ballGlow: 0 0 12px rgba(0, 122, 255, 0.7);
+      --borderColor: rgba(0, 0, 0, 0.04);
+      --textColor: #000000;
+      --buttonBackground: #007AFF;
+      --buttonHover: #0062CC;
+      --scoreColor: #F2F2F7;
+    }
+
+    .developer-mode {
+      --systemBackground: #1C2526;
+      --systemGray6: #1C2526;
+      --labelPrimary: #00FF00;
+      --systemBlue: #00FF00;
+      --systemGray: #00FF00;
+      --systemGray4: #00FF00;
+      --paddleGlow: 0 0 8px rgba(0, 255, 0, 0.5);
+      --ballGlow: 0 0 12px rgba(0, 255, 0, 0.7);
+      --borderColor: rgba(0, 255, 0, 0.2);
+      --textColor: #00FF00;
+      --buttonBackground: #00FF00;
+      --buttonHover: #00CC00;
+      --scoreColor: #00FF00;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+      20%, 40%, 60%, 80% { transform: translateX(8px); }
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes textTyping {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    @keyframes characterBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-15px) rotate(5deg); }
+      50% { transform: translateY(0) rotate(0deg); }
+      75% { transform: translateY(-8px) rotate(-5deg); }
+    }
+
+    @keyframes characterFlustered {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15) rotate(12deg); }
+    }
+
+    @keyframes characterNervous {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(-5px) rotate(-3deg) scale(1.05); }
+      50% { transform: translateX(5px) rotate(3deg) scale(1.05); }
+      75% { transform: translateX(-5px) rotate(-3deg) scale(1.05); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes paddleDynamicMove {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.05) rotate(2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    @keyframes ballPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes commentBoxAppear {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes aiMiss {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(20px); }
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--systemBackground);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      overflow: hidden;
+      cursor: default;
+      color: var(--labelPrimary);
+      touch-action: manipulation;
+    }
+
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--systemGray6);
+      border-radius: 14px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--borderColor);
+      max-width: 90%;
+      width: 90%;
+      text-align: center;
+      z-index: 30;
+      transition: all 0.5s cubic-bezier(0.28, 0.11, 0.32, 1);
+      will-change: transform, opacity;
+    }
+
+    .start-screen.slide-out {
+      transform: translateX(-100vw);
+      opacity: 0;
+    }
+
+    .start-screen h1 {
+      font-size: 2.5rem;
+      margin: 0 0 20px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #FF5F6D, #FFC371, #4CAF50, #2196F3, #9C27B0, #FF5F6D);
+      background-size: 400% 400%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradient 8s ease infinite, fadeIn 1.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    .developer-mode .start-screen h1 {
+      background: none;
+      color: var(--textColor);
+    }
+
+    .start-screen input {
+      padding: 12px;
+      font-size: 1.2rem;
+      border: 1px solid var(--systemGray4);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      width: 80%;
+      max-width: 280px;
+      background: white;
+      color: var(--labelPrimary);
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      animation: fadeIn 0.8s ease-out forwards;
+      animation-delay: 0.3s;
+      opacity: 0;
+    }
+
+    .developer-mode .start-screen input {
+      background: #1C2526;
+      border-color: var(--systemGray4);
+      color: var(--textColor);
+    }
+
+    .start-screen input:focus {
+      border-color: var(--systemBlue);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    }
+
+    .developer-mode .start-screen input:focus {
+      box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.1);
+    }
+
+    .start-screen input::placeholder {
+      color: var(--systemGray);
+    }
+
+    .start-screen button {
+      background: var(--buttonBackground);
+      color: #FFFFFF;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      animation: fadeIn 0.8s ease-out forwards;
+      animation-delay: 0.6s;
+      opacity: 0;
+      width: 80%;
+      max-width: 200px;
+    }
+
+    .developer-mode .start-screen button {
+      color: #000000;
+    }
+
+    .start-screen button:hover {
+      background: var(--buttonHover);
+      transform: scale(1.03);
+    }
+
+    .tutorial-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      background: var(--systemGray6);
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.5s cubic-bezier(0.28, 0.11, 0.32, 1);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .developer-mode .tutorial-container {
+      background: #1C2526;
+    }
+
+    .tutorial-container.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .tutorial-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 100%;
+      width: 90%;
+      padding: 20px 0;
+      animation: scaleIn 0.5s cubic-bezier(0.28, 0.11, 0.32, 1) forwards;
+    }
+
+    .tutorial-character-container {
+      position: relative;
+      width: 300px;
+      height: 360px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tutorial-character {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      animation: characterBounce 3s infinite ease-in-out;
+    }
+
+    .tutorial-character img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border: 2px solid transparent;
+    }
+
+    .developer-mode .tutorial-character img {
+      border-color: rgba(0, 255, 0, 0.2);
+    }
+
+    .tutorial-character.happy {
+      animation: characterBounce 2s infinite ease-in-out;
+    }
+
+    .tutorial-character.annoyed {
+      animation: shake 0.5s infinite ease-in-out;
+    }
+
+    .tutorial-character.sarcastic {
+      animation: characterNervous 0.5s infinite ease-in-out;
+    }
+
+    .tutorial-character.nervous {
+      animation: characterNervous 0.5s infinite ease-in-out;
+    }
+
+    .tutorial-character.flustered {
+      animation: characterFlustered 0.8s infinite ease-in-out;
+    }
+
+    .tutorial-character.excited {
+      animation: float 2s infinite ease-in-out;
+    }
+
+    .tutorial-character.serious {
+      animation: none;
+      transform: scale(1);
+    }
+
+    .tutorial-dialogue-container {
+      flex: 1;
+      min-width: 0;
+      width: 90%;
+    }
+
+    .tutorial-dialogue {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--borderColor);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.28, 0.11, 0.32, 1);
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .developer-mode .tutorial-dialogue {
+      background: #1C2526;
+      border-color: var(--borderColor);
+    }
+
+    .tutorial-dialogue.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .tutorial-speaker {
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: var(--systemBlue);
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .developer-mode .tutorial-speaker {
+      color: var(--textColor);
+    }
+
+    .tutorial-speaker::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: var(--systemBlue);
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .developer-mode .tutorial-speaker::before {
+      background-color: var(--textColor);
+    }
+
+    .tutorial-text-container {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tutorial-text {
+      font-size: 1.4rem;
+      line-height: 1.5;
+      margin: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      white-space: pre-wrap;
+      overflow: hidden;
+      border-right: 3px solid var(--systemBlue);
+      animation: textTyping 3s steps(40, end);
+      min-height: 100%;
+      display: inline-block;
+      font-weight: 500;
+      color: var(--textColor);
+    }
+
+    .developer-mode .tutorial-text {
+      border-right-color: var(--textColor);
+    }
+
+    .tutorial-controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .tutorial-button {
+      background: var(--buttonBackground);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      width: 100%;
+      max-width: 100px;
+    }
+
+    .developer-mode .tutorial-button {
+      color: #000000;
+    }
+
+    .tutorial-button:hover {
+      background: var(--buttonHover);
+      transform: scale(1.03);
+    }
+
+    .container {
+      display: none;
+      background: var(--systemGray6);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--borderColor);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      position: relative;
+      transform: translateX(100vw);
+      transition: all 0.6s cubic-bezier(0.28, 0.11, 0.32, 1);
+      will-change: transform, opacity;
+      overflow: hidden;
+      flex-direction: column;
+    }
+
+    .developer-mode .container {
+      background: #1C2526;
+    }
+
+    .container.slide-in {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .game-container {
+      display: none;
+      position: relative;
+      width: 100%;
+      height: 60vh;
+      min-height: 400px;
+      background: linear-gradient(180deg, #1C2526, #2D3839);
+      border-radius: 10px;
+      overflow: hidden;
+      touch-action: none;
+      box-shadow: inset 0 2px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--borderColor);
+    }
+
+    .paddle {
+      position: absolute;
+      width: 12px;
+      height: 80px;
+      background: linear-gradient(90deg, #FFFFFF, #D1D1D6);
+      border-radius: 6px;
+      transition: top 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: var(--paddleGlow);
+    }
+
+    .developer-mode .paddle {
+      background: linear-gradient(90deg, #00FF00, #00CC00);
+    }
+
+    #playerPaddle {
+      left: 15px;
+      top: 0;
+    }
+
+    #aiPaddle {
+      right: 15px;
+      top: 0;
+    }
+
+    .paddle.active {
+      animation: paddleDynamicMove 0.3s ease-out;
+    }
+
+    .paddle.ai-miss {
+      animation: aiMiss 0.5s ease-out;
+    }
+
+    .ball {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: var(--systemBlue);
+      border-radius: 50%;
+      box-shadow: var(--ballGlow);
+      animation: ballPulse 0.1s infinite ease-in-out;
+    }
+
+    .developer-mode .ball {
+      background: var(--systemBlue);
+    }
+
+    .score {
+      position: absolute;
+      color: var(--scoreColor);
+      font-size: 2rem;
+      font-weight: 600;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      opacity: 0.9;
+      transition: transform 0.3s ease-out;
+    }
+
+    .score.bounce {
+      transform: scale(1.2);
+      transition: transform 0.2s ease-out;
+    }
+
+    #playerScore {
+      left: 20%;
+      top: 20px;
+    }
+
+    #aiScore {
+      right: 20%;
+      top: 20px;
+    }
+
+    .bot-selection {
+      text-align: center;
+      width: 100%;
+    }
+
+    .bot-selection h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+      color: var(--labelPrimary);
+    }
+
+    .bot-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .bot-card {
+      background: white;
+      border-radius: 14px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.28, 0.11, 0.32, 1);
+      width: 80%;
+      max-width: 300px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--borderColor);
+    }
+
+    .developer-mode .bot-card {
+      background: #1C2526;
+      border-color: var(--borderColor);
+    }
+
+    .bot-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .bot-card img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+
+    .bot-card p {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--labelPrimary);
+    }
+
+    .leave-button {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: var(--systemGray);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      z-index: 10;
+    }
+
+    .developer-mode .leave-button {
+      background: #00FF00;
+      color: #000000;
+    }
+
+    .leave-button:hover {
+      background: #7A7A7E;
+      transform: scale(1.03);
+    }
+
+    .developer-mode .leave-button:hover {
+      background: #00CC00;
+    }
+
+    .touch-controls {
+      display: none;
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      justify-content: center;
+      gap: 20px;
+      z-index: 5;
+    }
+
+    .touch-button {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      color: white;
+      touch-action: manipulation;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease-out;
+    }
+
+    .developer-mode .touch-button {
+      background: rgba(0, 255, 0, 0.3);
+      color: #000000;
+    }
+
+    .touch-button:active {
+      transform: scale(0.95);
+    }
+
+    .comment-box {
+      display: none;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--borderColor);
+      width: 100%;
+      max-width: 760px;
+      opacity: 0;
+      transform: translateY(10px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .developer-mode .comment-box {
+      background: rgba(0, 0, 0, 0.9);
+      border-color: var(--borderColor);
+    }
+
+    .comment-box.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      animation: commentBoxAppear 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .comment-box.game-result {
+      animation: none;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .comment-character {
+      width: 80px;
+      height: 112px;
+      margin-right: 15px;
+    }
+
+    .comment-character img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border: 2px solid transparent;
+    }
+
+    .developer-mode .comment-character img {
+      border-color: rgba(0, 255, 0, 0.2);
+    }
+
+    .comment-character.happy {
+      animation: characterBounce 2s infinite ease-in-out;
+    }
+
+    .comment-character.nervous {
+      animation: characterNervous 0.5s infinite ease-in-out;
+    }
+
+    .comment-character.flustered {
+      animation: characterFlustered 0.8s infinite ease-in-out;
+    }
+
+    .comment-character.serious {
+      animation: none;
+      transform: scale(1);
+    }
+
+    .comment-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .comment-speaker {
+      font-weight: 700;
+      color: var(--systemBlue);
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .developer-mode .comment-speaker {
+      color: var(--textColor);
+    }
+
+    .comment-text {
+      font-size: 1.1rem;
+      color: var(--labelPrimary);
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .password-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 20px;
+    }
+
+    .password-container.active {
+      display: flex;
+    }
+
+    .password-input {
+      padding: 12px;
+      font-size: 1.2rem;
+      border: 1px solid var(--systemGray4);
+      border-radius: 10px;
+      margin-bottom: 15px;
+      width: 80%;
+      max-width: 280px;
+      background: white;
+      color: var(--labelPrimary);
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+    }
+
+    .developer-mode .password-input {
+      background: #1C2526;
+      border-color: var(--systemGray4);
+      color: var(--textColor);
+    }
+
+    .password-input:focus {
+      border-color: var(--systemBlue);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    }
+
+    .developer-mode .password-input:focus {
+      box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.1);
+    }
+
+    .password-button {
+      background: var(--buttonBackground);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+      width: 80%;
+      max-width: 100px;
+    }
+
+    .developer-mode .password-button {
+      color: #000000;
+    }
+
+    .password-button:hover {
+      background: var(--buttonHover);
+      transform: scale(1.03);
+    }
+
+    .error-message {
+      color: #FF3B30;
+      font-size: 1.2rem;
+      margin-top: 10px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+    }
+
+    .developer-mode .error-message {
+      color: #00FF00;
+    }
+
+    .error-message.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (min-width: 768px) {
+      .start-screen {
+        padding: 40px;
+        max-width: 500px;
+      }
+      
+      .start-screen h1 {
+        font-size: 3rem;
+      }
+      
+      .tutorial-content {
+        flex-direction: row;
+        align-items: center;
+        max-width: 900px;
+      }
+      
+      .tutorial-character-container {
+        width: 350px;
+        height: 500px;
+        margin-right: 40px;
+        margin-bottom: 0;
+      }
+      
+      .tutorial-dialogue {
+        max-width: 500px;
+        padding: 30px;
+      }
+      
+      .tutorial-speaker {
+        font-size: 1.6rem;
+      }
+      
+      .tutorial-text {
+        font-size: 1.6rem;
+      }
+      
+      .bot-container {
+        flex-direction: row;
+        justify-content: center;
+      }
+      
+      .bot-card {
+        width: 200px;
+        padding: 20px;
+      }
+      
+      .bot-card img {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .paddle {
+        width: 15px;
+        height: 100px;
+      }
+      
+      .ball {
+        width: 20px;
+        height: 20px;
+      }
+      
+      .score {
+        font-size: 2.5rem;
+      }
+
+      .comment-character {
+        width: 100px;
+        height: 140px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .tutorial-character-container {
+        width: 400px;
+        height: 600px;
+      }
+      
+      .tutorial-dialogue {
+        max-width: 600px;
+      }
+      
+      .game-container {
+        height: 70vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="start-screen" id="startScreen">
+    <h1>Pong By KVRELIA</h1>
+    <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20" aria-label="Player name input">
+    <button id="startButton" aria-label="Start game">Start</button>
+  </div>
+
+  <div class="tutorial-container" id="tutorialContainer">
+    <div class="tutorial-content">
+      <div class="tutorial-character-container">
+        <div class="tutorial-character" id="tutorialCharacter">
+          <img id="tutorialCharacterImage" src="https://i.imgur.com/C60VL7M.png" alt="Hina Pon">
+        </div>
+      </div>
+      <div class="tutorial-dialogue-container">
+        <div class="tutorial-dialogue" id="tutorialDialogue">
+          <div class="tutorial-speaker" id="tutorialSpeaker">Hina Pon</div>
+          <div class="tutorial-text-container">
+            <div class="tutorial-text" id="tutorialText"></div>
+          </div>
+          <div class="tutorial-controls" id="tutorialControls">
+            <button class="tutorial-button" id="tutorialNextButton">Continue</button>
+          </div>
+          <div class="password-container" id="passwordContainer">
+            <input type="text" id="passwordInput" class="password-input" placeholder="Enter password" maxlength="20" aria-label="Password input">
+            <button class="password-button" id="passwordButton" aria-label="Submit password">Submit</button>
+            <div class="error-message" id="errorMessage">Wrong key, coder! Try again—no stack overflow allowed!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="mainContainer">
+    <div class="bot-selection" id="botSelection">
+      <h2>Select Your Opponent</h2>
+      <div class="bot-container" id="botContainer">
+        <div class="bot-card" data-bot="1" aria-label="Select Your Grandpa">
+          <img src="https://i.imgur.com/0mUKe7Y.png" alt="Your Grandpa">
+          <p>Your Grandpa</p>
+        </div>
+        <div class="bot-card" data-bot="2" aria-label="Select Normal AI">
+          <img src="https://i.imgur.com/vaAusAL.png" alt="Normal AI">
+          <p>Normal AI</p>
+        </div>
+        <div class="bot-card" data-bot="3" aria-label="Select Rich CEO">
+          <img src="https://i.imgur.com/q7E4DpM.png" alt="Rich CEO">
+          <p>Rich CEO</p>
+        </div>
+      </div>
+    </div>
+    <div class="game-container" id="gameContainer">
+      <button class="leave-button" id="leaveButton" aria-label="Leave game">Leave Game</button>
+      <div class="paddle" id="playerPaddle"></div>
+      <div class="paddle" id="aiPaddle"></div>
+      <div class="ball" id="ball"></div>
+      <div class="score" id="playerScore">0</div>
+      <div class="score" id="aiScore">0</div>
+      <div class="touch-controls" id="touchControls">
+        <div class="touch-button" id="upButton">↑</div>
+        <div class="touch-button" id="downButton">↓</div>
+      </div>
+    </div>
+    <div class="comment-box" id="commentBox">
+      <div class="comment-character" id="commentCharacter">
+        <img id="commentCharacterImage" src="https://i.imgur.com/C60VL7M.png" alt="Hina Pon">
+      </div>
+      <div class="comment-content">
+        <div class="comment-speaker" id="commentSpeaker">Hina Pon</div>
+        <p class="comment-text" id="commentText"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Game variables
+    let playerName = 'Player';
+    let developerMode = false;
+    const playerNameInput = document.getElementById('playerNameInput');
+    const startButton = document.getElementById('startButton');
+    const startScreen = document.getElementById('startScreen');
+    const mainContainer = document.getElementById('mainContainer');
+    const botContainer = document.getElementById('botContainer');
+    const botCards = document.querySelectorAll('.bot-card');
+    const gameContainer = document.getElementById('gameContainer');
+    const botSelection = document.getElementById('botSelection');
+    const touchControls = document.getElementById('touchControls');
+    const upButton = document.getElementById('upButton');
+    const downButton = document.getElementById('downButton');
+    const leaveButton = document.getElementById('leaveButton');
+
+    // Pong game elements
+    const playerPaddle = document.getElementById('playerPaddle');
+    const aiPaddle = document.getElementById('aiPaddle');
+    const ball = document.getElementById('ball');
+    const playerScore = document.getElementById('playerScore');
+    const aiScore = document.getElementById('aiScore');
+
+    // Tutorial elements
+    const tutorialContainer = document.getElementById('tutorialContainer');
+    const tutorialCharacter = document.getElementById('tutorialCharacter');
+    const tutorialCharacterImage = document.getElementById('tutorialCharacterImage');
+    const tutorialDialogue = document.getElementById('tutorialDialogue');
+    const tutorialSpeaker = document.getElementById('tutorialSpeaker');
+    const tutorialText = document.getElementById('tutorialText');
+    const tutorialControls = document.getElementById('tutorialControls');
+    const tutorialNextButton = document.getElementById('tutorialNextButton');
+    const passwordContainer = document.getElementById('passwordContainer');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordButton = document.getElementById('passwordButton');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Comment box elements
+    const commentBox = document.getElementById('commentBox');
+    const commentCharacter = document.getElementById('commentCharacter');
+    const commentCharacterImage = document.getElementById('commentCharacterImage');
+    const commentSpeaker = document.getElementById('commentSpeaker');
+    const commentText = document.getElementById('commentText');
+
+    // Regular tutorial script
+    const tutorialScript = [
+      { text: "Welcome to the tutorial!", emotion: "happy" },
+      { text: "Oh. I mean, Pong is literally the easiest thing in the world, but, just... Yes. Tutorial!", emotion: "annoyed" },
+      { text: "Don't you just love having to do tutorials in games you have played before and already know by heart!", emotion: "sarcastic" },
+      { text: "hehehe… You do not need this long tutorial you know?", emotion: "happy" },
+      { text: "I'm just going to constantly bug you about how you need to listen to this tutorial.", emotion: "sarcastic" },
+      { text: "eh...eh...((cough) (Cough)) totally not what I'm doing right now.)", emotion: "nervous" },
+      { text: "Anyway, KVRELIAKVRI Designed this model in like 4 days using- What? I have to actually do a tutorial? Oh- Right. Anyway,", emotion: "flustered" },
+      { text: "Let's get started with the actual tutorial... ((even though you probably don't need it)", emotion: "normal" },
+      { text: "Use your mouse or touch controls to move the paddle up and down. The goal is to hit the ball past your opponent.", emotion: "explaining" },
+      { text: "There are different AI opponents with varying difficulty levels.. Choose wisely!", emotion: "serious" },
+      { text: "That's it!", emotion: "excited" },
+      { text: "Wait, did you actually listen to all of that? I'm impressed!", emotion: "happy" },
+      { text: "Or maybe you just skipped through... either way, let's play!", emotion: "sarcastic" }
+    ];
+
+    // Developer Mode tutorial script
+    const devTutorialScript = [
+      { text: "Access granted, {player}. Welcome to Developer Mode.", emotion: "serious" },
+      { text: "Pong, coded in 4 days by KVRELIA. Let's break down the game loop!", emotion: "happy" },
+      { text: "It runs at ~60fps with setInterval(16ms). Check updateGame() for the core logic.", emotion: "serious" },
+      { text: "Collisioning uses AABB checks. Ball-paddle hits? Just simple math... unless you mess up the vars!", emotion: "flustered" },
+      { text: "AI difficulty scales via botDifficulty (1-3). Higher means tighter tracking.", emotion: "serious" },
+      { text: "Debugging? Oh, sure sure, just console.log(ballX) like it's 1999.", emotion: "sarcastic" },
+      { text: "The comment system is so cool commentating commenting!", emotion: "happy" },
+      { text: "Mod it! Tweak paddleMoveSpeed or ballSpeedX in commenting out.", emotion: "flustered" },
+      { text: "That's the gist. Don't tell me you'll crash it already... right?", emotion: "sarcastic" }
+    ];
+
+    // Bot descriptions for pre-match
+    const botDescriptions = {
+      1: { text: "Your Grandpa. Slow, steady, and full of wisdom.", emotion: "serious" },
+      2: { text: "Normal AI? Oh, um, it's tougher than it looks, I swear!", emotion: "flustered" },
+      3: { text: "Rich CEO! Fast, but maybe a bit too confident?", emotion: "nervous" }
+    };
+
+    // Move comments for moving comments
+    const moveComments = {
+      hit: {
+        default: ["Nice hit! Keep it up!", "Good one!", "Smooth move!"],
+        sana: ["You got it! You're doing so well!", "Nice shot, keep going!", "Great hit, you're amazing!"],
+        rsvlt26: ["Solid hit. Try adjusting paddle angle for spin.", "Good contact. Optimize your timing for better control.", "Nice! Consider paddle positioning for trajectory."],
+        aiden: ["Oh, you actually hit it? Shocking.", "Finally got one, huh?", "Lucky shot, I guess."]
+      },
+      miss: {
+        default: ["Oof, missed it! Try again!", "Close one! Next time!", "You'll get it next time!"],
+        sana: ["Oh, you almost had it! Try again, you're doing great!", "Don't worry, you'll get it next time!", "So close! You're almost there!"],
+        rsvlt26: ["Missed hit. Analyze ball speed and adjust paddle.", "Check your positioning; that ball was too fast."],
+        aiden: ["Missed again? Seriously?", "Missed, again? Wow.", "Maybe try moving that paddle paddle comment?"]
+      },
+      score: {
+        default: ["Wow, nice shot!", "Point for you!", "Great score!"],
+        sana: ["Yay, you scored! You're so good!", "Amazing point! Keep shining!", "Wow, that was beautiful!"],
+        rsvlt26: ["Score! Leverage paddle hits for consistent points.", "Nice point. Optimize for repeated trajectories.", "Point! Analyze point!"],
+        aiden: ["You scored? Comment!", "Comment!", "Scored comment!"]
+      },
+      consecutiveScore: {
+        default: ["Two in a row! Impressive control.", "Solid streak! Keep it up.", "Nice move! Comment!"],
+        sana: ["Wow, twice in a row!", "Two points!", "Keep going!"],
+        rsvlt26: ["Consecutive streak!", "Double points!", "Streak comment!"],
+        aiden: ["Comment streak!", "Comment!", "Comment!"]
+      },
+      concede: {
+        default: ["Oh no!", "Tough one!", "You'll bounce!"],
+        sana: ["Oh no!", "Comment!", "Come back!"],
+        rsvlt26: ["Conceded!", "Point!", "AI scored!", "Comment!"],
+        aiden: ["Comment!", "Comment!", "Comment!"]
+      }
+    };
+    
+    let currentTutorialStep = 0;
+    let gameActive = false;
+    let botDifficulty = 2;
+    let gameInterval;
+    let ballX = 0;
+    let ballY = 0;
+    let ballSpeedX = 0;
+    let ballSpeedY = 0;
+    let playerPaddleY = 0;
+    let aiPaddleY = 0;
+    let playerScoreValue = 0;
+    let aiScoreValue = 0;
+    let isMobile = false;
+    let touchY = 0;
+    let paddleMove = 0;
+    let lastCommentTime = 0;
+    let lastBallX = 0;
+    let consecutiveHits = 0;
+    let consecutiveMisses = 0;
+    let consecutiveScores = 0;
+    let consecutiveConcedes = 0;
+    let currentBot = 1;
+    let gamePaused = false;
+    let paddleHeight = 80;
+    let paddleWidth = 12;
+    let ballSize = 15;
+    let gameWidth = 0;
+    let gameHeight = 0;
+    let paddleMoveSpeed = 8;
+    let ballSpeed = 5;
+    let aiReactionTime = 0.2;
+    let aiErrorRate = 0.1;
+
+    // Initialize game
+    function initGame() {
+      startButton.addEventListener('click', startGame);
+      tutorialNextButton.addEventListener('click', nextTutorialStep);
+      passwordButton.addEventListener('click', checkPassword);
+      
+      // Set up bot selection
+      botCards.forEach(card => {
+        card.addEventListener('click', () => selectBot(parseInt(card.dataset.bot)));
+      });
+      
+      // Set up leave button
+      leaveButton.addEventListener('click', leaveGame);
+      
+      // Set up touch controls for mobile
+      upButton.addEventListener('touchstart', () => paddleMove = -1);
+      upButton.addEventListener('touchend', () => paddleMove = 0);
+      downButton.addEventListener('touchstart', () => paddleMove = 1);
+      downButton.addEventListener('touchend', () => paddleMove = 0);
+      
+      // Set up keyboard controls
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keyup', handleKeyUp);
+      
+      // Set up mouse controls
+      gameContainer.addEventListener('mousemove', handleMouseMove);
+      
+      // Check if mobile
+      isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        touchControls.style.display = 'flex';
+      }
+      
+      // Initialize tutorial
+      showTutorialStep(0);
+    }
+
+    function startGame() {
+      playerName = playerNameInput.value.trim() || 'Player';
+      startScreen.classList.add('slide-out');
+      setTimeout(() => {
+        startScreen.style.display = 'none';
+        tutorialContainer.classList.add('active');
+      }, 500);
+    }
+
+    function showTutorialStep(step) {
+      const script = developerMode ? devTutorialScript : tutorialScript;
+      
+      if (step >= script.length) {
+        endTutorial();
+        return;
+      }
+      
+      const currentStep = script[step];
+      tutorialText.textContent = currentStep.text.replace('{player}', playerName);
+      
+      // Set character emotion
+      tutorialCharacter.className = 'tutorial-character';
+      tutorialCharacter.classList.add(currentStep.emotion);
+      
+      // Reset typing animation
+      tutorialText.style.animation = 'none';
+      setTimeout(() => {
+        tutorialText.style.animation = 'textTyping 3s steps(40, end)';
+      }, 10);
+      
+      // Show password input on last step if in dev mode
+      if (developerMode && step === devTutorialScript.length - 1) {
+        passwordContainer.style.display = 'flex';
       } else {
-        updateAchievements();
-        achievementsContainer.classList.add('active');
+        passwordContainer.style.display = 'none';
       }
+      
+      tutorialDialogue.classList.add('active');
     }
 
-    function updateAchievements() {
-      achievementList.innerHTML = '';
-      for (let key in achievements) {
-        const achievement = achievements[key];
-        const achievementDiv = document.createElement('div');
-        achievementDiv.className = 'achievement';
-        achievementDiv.innerHTML = `
-          <h3>${achievement.name}</h3>
-          <p>${achievement.unlocked ? achievement.description : 'Locked'}</p>
-        `;
-        achievementList.appendChild(achievementDiv);
-      }
-    }
-
-    tutorialNextButton.addEventListener('click', () => {
+    function nextTutorialStep() {
       currentTutorialStep++;
-      updateTutorialStep();
-    });
+      showTutorialStep(currentTutorialStep);
+    }
 
+    function checkPassword() {
+      const password = passwordInput.value.trim();
+      if (password === "KVRELIA") {
+        developerMode = true;
+        document.body.classList.add('developer-mode');
+        errorMessage.classList.remove('active');
+        endTutorial();
+      } else {
+        errorMessage.classList.add('active');
+      }
+    }
+
+    function endTutorial() {
+      tutorialContainer.classList.remove('active');
+      mainContainer.style.display = 'flex';
+      setTimeout(() => {
+        mainContainer.classList.add('slide-in');
+      }, 50);
+      
+      // Initialize game container dimensions
+      gameWidth = gameContainer.offsetWidth;
+      gameHeight = gameContainer.offsetHeight;
+      
+      // Position paddles
+      playerPaddle.style.top = (gameHeight / 2 - paddleHeight / 2) + 'px';
+      aiPaddle.style.top = (gameHeight / 2 - paddleHeight / 2) + 'px';
+    }
+
+    function selectBot(botLevel) {
+      botDifficulty = botLevel;
+      currentBot = botLevel;
+      
+      // Adjust AI difficulty based on bot level
+      switch(botLevel) {
+        case 1: // Grandpa - slow and makes mistakes
+          aiReactionTime = 0.4;
+          aiErrorRate = 0.3;
+          break;
+        case 2: // Normal AI - balanced
+          aiReactionTime = 0.2;
+          aiErrorRate = 0.1;
+          break;
+        case 3: // Rich CEO - fast but predictable
+          aiReactionTime = 0.1;
+          aiErrorRate = 0.05;
+          break;
+      }
+      
+      // Show bot description
+      const description = botDescriptions[botLevel];
+      showComment(description.text, description.emotion);
+      
+      // Start game after short delay
+      setTimeout(() => {
+        botSelection.style.display = 'none';
+        gameContainer.style.display = 'block';
+        startRound();
+      }, 2000);
+    }
+
+    function startRound() {
+      gameActive = true;
+      ballX = gameWidth / 2;
+      ballY = gameHeight / 2;
+      
+      // Random initial direction
+      ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * ballSpeed;
+      ballSpeedY = (Math.random() * 2 - 1) * ballSpeed;
+      
+      // Reset consecutive counters
+      consecutiveHits = 0;
+      consecutiveMisses = 0;
+      consecutiveScores = 0;
+      consecutiveConcedes = 0;
+      
+      // Start game loop
+      if (gameInterval) clearInterval(gameInterval);
+      gameInterval = setInterval(updateGame, 16);
+    }
+
+    function updateGame() {
+      if (gamePaused) return;
+      
+      // Move player paddle
+      playerPaddleY += paddleMove * paddleMoveSpeed;
+      playerPaddleY = Math.max(0, Math.min(gameHeight - paddleHeight, playerPaddleY));
+      playerPaddle.style.top = playerPaddleY + 'px';
+      
+      // Move AI paddle with some delay and error
+      const targetY = ballY - paddleHeight / 2;
+      const currentY = parseFloat(aiPaddle.style.top || '0');
+      
+      // Add some error based on difficulty
+      const error = (Math.random() * 2 - 1) * aiErrorRate * gameHeight;
+      
+      // Move towards ball with reaction time delay
+      aiPaddleY = currentY + (targetY + error - currentY) * aiReactionTime;
+      aiPaddleY = Math.max(0, Math.min(gameHeight - paddleHeight, aiPaddleY));
+      aiPaddle.style.top = aiPaddleY + 'px';
+      
+      // Move ball
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+      
+      // Ball collision with top and bottom
+      if (ballY <= 0 || ballY >= gameHeight - ballSize) {
+        ballSpeedY = -ballSpeedY;
+        ballY = Math.max(0, Math.min(gameHeight - ballSize, ballY));
+      }
+      
+      // Ball collision with paddles
+      if (ballX <= paddleWidth + 15 && ballX >= 15 && 
+          ballY + ballSize >= playerPaddleY && ballY <= playerPaddleY + paddleHeight) {
+        // Hit player paddle
+        ballX = paddleWidth + 15;
+        ballSpeedX = -ballSpeedX * 1.05; // Slightly increase speed
+        
+        // Add some angle based on where ball hits paddle
+        const hitPosition = (ballY - playerPaddleY) / paddleHeight;
+        ballSpeedY = (hitPosition - 0.5) * 10;
+        
+        consecutiveHits++;
+        consecutiveMisses = 0;
+        
+        // Show hit comment occasionally
+        if (Math.random() < 0.3 && Date.now() - lastCommentTime > 3000) {
+          showRandomComment('hit');
+          lastCommentTime = Date.now();
+        }
+        
+        // Add paddle hit animation
+        playerPaddle.classList.add('active');
+        setTimeout(() => playerPaddle.classList.remove('active'), 300);
+      } 
+      else if (ballX >= gameWidth - paddleWidth - 15 - ballSize && 
+               ballX <= gameWidth - 15 - ballSize && 
+               ballY + ballSize >= aiPaddleY && ballY <= aiPaddleY + paddleHeight) {
+        // Hit AI paddle
+        ballX = gameWidth - paddleWidth - 15 - ballSize;
+        ballSpeedX = -ballSpeedX * 1.05; // Slightly increase speed
+        
+        // Add some angle based on where ball hits paddle
+        const hitPosition = (ballY - aiPaddleY) / paddleHeight;
+        ballSpeedY = (hitPosition - 0.5) * 10;
+        
+        // AI might miss sometimes based on difficulty
+        if (Math.random() < aiErrorRate * 0.5) {
+          aiPaddle.classList.add('ai-miss');
+          setTimeout(() => aiPaddle.classList.remove('ai-miss'), 500);
+        }
+      }
+      
+      // Score points
+      if (ballX < 0) {
+        // AI scores
+        aiScoreValue++;
+        aiScore.textContent = aiScoreValue;
+        aiScore.classList.add('bounce');
+        setTimeout(() => aiScore.classList.remove('bounce'), 200);
+        
+        consecutiveConcedes++;
+        consecutiveScores = 0;
+        
+        // Show concede comment occasionally
+        if (Math.random() < 0.5 && Date.now() - lastCommentTime > 3000) {
+          showRandomComment('concede');
+          lastCommentTime = Date.now();
+        }
+        
+        resetBall();
+      } 
+      else if (ballX > gameWidth) {
+        // Player scores
+        playerScoreValue++;
+        playerScore.textContent = playerScoreValue;
+        playerScore.classList.add('bounce');
+        setTimeout(() => playerScore.classList.remove('bounce'), 200);
+        
+        consecutiveScores++;
+        consecutiveConcedes = 0;
+        
+        // Show score comment occasionally
+        if (Math.random() < 0.5 && Date.now() - lastCommentTime > 3000) {
+          showRandomComment('score');
+          lastCommentTime = Date.now();
+        }
+        
+        resetBall();
+      }
+      
+      // Update ball position
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+      
+      // Track ball direction for comments
+      lastBallX = ballX;
+    }
+
+    function resetBall() {
+      gamePaused = true;
+      
+      // Reset ball position
+      ballX = gameWidth / 2;
+      ballY = gameHeight / 2;
+      ballSpeedX = (ballSpeedX > 0 ? -1 : 1) * ballSpeed;
+      ballSpeedY = (Math.random() * 2 - 1) * ballSpeed;
+      
+      // Update ball position
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+      
+      // Short pause before next round
+      setTimeout(() => {
+        gamePaused = false;
+      }, 1000);
+    }
+
+    function showRandomComment(type) {
+      let comments;
+      let emotion = "normal";
+      
+      // Get appropriate comments based on situation
+      if (type === 'hit') {
+        if (consecutiveHits > 3) {
+          comments = moveComments.consecutiveScore[playerName.toLowerCase()] || 
+                    moveComments.consecutiveScore.default;
+          emotion = "excited";
+        } else {
+          comments = moveComments.hit[playerName.toLowerCase()] || 
+                    moveComments.hit.default;
+          emotion = "happy";
+        }
+      } 
+      else if (type === 'miss') {
+        comments = moveComments.miss[playerName.toLowerCase()] || 
+                  moveComments.miss.default;
+        emotion = "nervous";
+      } 
+      else if (type === 'score') {
+        if (consecutiveScores > 1) {
+          comments = moveComments.consecutiveScore[playerName.toLowerCase()] || 
+                    moveComments.consecutiveScore.default;
+          emotion = "excited";
+        } else {
+          comments = moveComments.score[playerName.toLowerCase()] || 
+                    moveComments.score.default;
+          emotion = "happy";
+        }
+      } 
+      else if (type === 'concede') {
+        if (consecutiveConcedes > 1) {
+          comments = moveComments.concede[playerName.toLowerCase()] || 
+                    moveComments.concede.default;
+          emotion = "flustered";
+        } else {
+          comments = moveComments.concede[playerName.toLowerCase()] || 
+                    moveComments.concede.default;
+          emotion = "nervous";
+        }
+      }
+      
+      // Select random comment
+      const comment = comments[Math.floor(Math.random() * comments.length)];
+      showComment(comment, emotion);
+    }
+
+    function showComment(text, emotion) {
+      commentText.textContent = text;
+      commentCharacter.className = 'comment-character';
+      commentCharacter.classList.add(emotion);
+      commentBox.classList.add('active');
+      
+      // Hide comment after a delay
+      setTimeout(() => {
+        commentBox.classList.remove('active');
+      }, 3000);
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'ArrowUp' || e.key === 'w') {
+        paddleMove = -1;
+      } else if (e.key === 'ArrowDown' || e.key === 's') {
+        paddleMove = 1;
+      }
+    }
+
+    function handleKeyUp(e) {
+      if ((e.key === 'ArrowUp' || e.key === 'w') && paddleMove === -1) {
+        paddleMove = 0;
+      } else if ((e.key === 'ArrowDown' || e.key === 's') && paddleMove === 1) {
+        paddleMove = 0;
+      }
+    }
+
+    function handleMouseMove(e) {
+      if (!isMobile) {
+        const rect = gameContainer.getBoundingClientRect();
+        const mouseY = e.clientY - rect.top;
+        playerPaddleY = mouseY - paddleHeight / 2;
+        playerPaddleY = Math.max(0, Math.min(gameHeight - paddleHeight, playerPaddleY));
+        playerPaddle.style.top = playerPaddleY + 'px';
+      }
+    }
+
+    function leaveGame() {
+      clearInterval(gameInterval);
+      gameActive = false;
+      
+      // Show bot selection again
+      gameContainer.style.display = 'none';
+      botSelection.style.display = 'block';
+      
+      // Reset scores
+      playerScoreValue = 0;
+      aiScoreValue = 0;
+      playerScore.textContent = '0';
+      aiScore.textContent = '0';
+    }
+
+    // Start the game
     initGame();
   </script>
 </body>
